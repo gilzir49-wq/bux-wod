@@ -25,7 +25,7 @@ import {
   BackIcon,
   TrashIcon,
 } from '@/components/Icons';
-import { buildShareText } from '@/lib/share';
+import { buildShareText, buildAppShareText } from '@/lib/share';
 import { deleteWorkout, getSavedWorkouts, rateWorkout, saveWorkout } from '@/lib/storage';
 
 type Screen = 'home' | 'generating' | 'result' | 'saved';
@@ -139,6 +139,24 @@ export default function Page() {
     }
   }
 
+  async function handleShareApp() {
+    const text = buildAppShareText();
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'BUX WOD 🦌', text });
+        return;
+      }
+    } catch {
+      // cancelled — fall through to clipboard
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      flash('הלינק הועתק! שלחו לחברים 🦌');
+    } catch {
+      flash('לא ניתן לשתף במכשיר הזה');
+    }
+  }
+
   function openSaved(w: Workout) {
     setWorkout(w);
     setSavedFlag(true);
@@ -186,6 +204,7 @@ export default function Page() {
           equipment={equipment}
           toggleEquipment={toggleEquipment}
           onGenerate={handleGenerate}
+          onShareApp={handleShareApp}
         />
       )}
 
@@ -289,6 +308,7 @@ function HomeScreen(props: {
   equipment: Equipment[];
   toggleEquipment: (e: Equipment) => void;
   onGenerate: () => void;
+  onShareApp: () => void;
 }) {
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
   return (
@@ -396,6 +416,13 @@ function HomeScreen(props: {
       <p className="display text-center text-xs font-bold uppercase tracking-[0.3em] text-bux-green-light">
         Let’s Go BUX
       </p>
+
+      <button
+        onClick={props.onShareApp}
+        className="press mx-auto flex items-center gap-2 rounded-full bg-bux-green/8 px-4 py-2.5 text-sm font-bold text-bux-green"
+      >
+        <ShareIcon size={17} /> שתפו את BUX WOD לחברים
+      </button>
     </div>
   );
 }
