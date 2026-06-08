@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-app: 'Heebo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --bux-green: #1e4d2b;
+  --bux-green-dark: #143620;
+  --bux-yellow: #ffd400;
+  --bux-cream: #fbf8ed;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  position: relative;
+  color: #143620;
+  font-family: var(--font-app);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  min-height: 100dvh;
+  overscroll-behavior-y: none;
+  /* Layered brand backdrop: warm cream + a soft top glow + a faint
+     diagonal chevron weave that echoes the antlers/energy of the mark. */
+  background-color: var(--bux-cream);
+  background-image:
+    radial-gradient(120% 60% at 50% -8%, rgba(255, 212, 0, 0.16), transparent 60%),
+    radial-gradient(90% 50% at 110% 0%, rgba(30, 77, 43, 0.06), transparent 55%),
+    repeating-linear-gradient(
+      135deg,
+      rgba(30, 77, 43, 0.035) 0px,
+      rgba(30, 77, 43, 0.035) 1px,
+      transparent 1px,
+      transparent 11px
+    );
+  background-attachment: fixed;
+}
+
+/* Fine film grain for a tactile, printed feel — sits above the page,
+   ignores pointer events, very low opacity. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@layer components {
+  .press {
+    @apply transition-all duration-150 active:translate-y-[2px] active:brightness-95;
+  }
+  /* Athletic display type for English movement names / numbers / badges. */
+  .display {
+    font-family: var(--font-oswald), var(--font-app), sans-serif;
+    letter-spacing: 0.01em;
+  }
+  /* The dark "chalkboard" panel used for the main WOD piece. */
+  .board {
+    background:
+      radial-gradient(140% 120% at 0% 0%, #2d6b3d 0%, transparent 55%),
+      linear-gradient(160deg, #1e4d2b 0%, #143620 100%);
+  }
+  .hairline {
+    box-shadow: inset 0 0 0 1px rgba(20, 54, 32, 0.08);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
