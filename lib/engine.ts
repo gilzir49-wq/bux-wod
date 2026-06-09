@@ -56,7 +56,9 @@ const FULL_GYM_WILDCARD: Equipment[] = [
   'jump_rope',
   'box',
   'rings',
-  'cardio_machine',
+  'rower',
+  'bike',
+  'skierg',
 ];
 
 // Resolve the "effective" equipment set, expanding the wildcards.
@@ -183,6 +185,23 @@ function poolFor(
   );
 }
 
+const LEVEL_RANK: Record<Level, number> = { beginner: 0, intermediate: 1, advanced: 2 };
+
+// All movements that use a given piece of equipment and are reachable with the
+// athlete's gear. Prefer level-appropriate ones; if none (e.g. a beginner who
+// owns a SkiErg / pull-up bar, whose movements are graded intermediate+), fall
+// back to the EASIEST available tier — those movements carry scaling notes, so
+// it's correct to still feature the gear the athlete explicitly said they have.
+function movementsForEquipment(eq: Equipment, eff: Set<Equipment>, level: Level): Movement[] {
+  const cands = MOVEMENTS.filter((m) => m.equipment.includes(eq) && movementAvailable(m, eff));
+  if (!cands.length) return [];
+  const levelMatch = cands.filter((m) => m.levels.includes(level));
+  if (levelMatch.length) return levelMatch;
+  const rank = (m: Movement) => Math.min(...m.levels.map((l) => LEVEL_RANK[l]));
+  const minRank = Math.min(...cands.map(rank));
+  return cands.filter((m) => rank(m) === minRank);
+}
+
 // fall back to an easier level if the requested level has nothing.
 function poolWithFallback(
   modality: Movement['modality'],
@@ -209,7 +228,12 @@ interface BuildCtx {
   mainMinutes: number;
 }
 
-// Choose 2-4 movements with modality variety for a metcon.
+// Choose 2-4 movements for a metcon. Two priorities, in order:
+//   1) GUARANTEE the gear the athlete said they have actually shows up — every
+//      selected piece of equipment that has a usable movement gets one in the
+//      piece (up to the slot count). This is what members expect: "I told it I
+//      have a kettlebell, so the workout should use my kettlebell."
+//   2) Fill the rest with goal-weighted variety across modalities.
 function chooseMetconMovements(
   ctx: BuildCtx,
   weighting: { weightlifting: number; gymnastics: number; cardio: number },
@@ -219,21 +243,47 @@ function chooseMetconMovements(
   const wl = poolWithFallback('weightlifting', input.level, eff);
   const gym = poolWithFallback('gymnastics', input.level, eff);
   const cardio = poolWithFallback('cardio', input.level, eff);
+  const everyAvail = [...wl, ...gym, ...cardio];
 
-  // Build a weighted bag of buckets, then draw distinct movements.
+  const chosen: Movement[] = [];
+  const usedIds = new Set<string>();
+  const add = (m?: Movement): boolean => {
+    if (m && !usedIds.has(m.id)) {
+      usedIds.add(m.id);
+      chosen.push(m);
+      return true;
+    }
+    return false;
+  };
+
+  // ---- 1) cover each explicitly selected piece of equipment ----
+  // "full_gym"/"park" mean "I have lots of stuff" — no specific item to honor,
+  // so we skip coverage and let the goal weighting drive the selection.
+  const wildcard = input.equipment.includes('full_gym') || input.equipment.includes('park');
+  const selectedReal = input.equipment.filter((e) => e !== 'none');
+  if (selectedReal.length && !wildcard) {
+    for (const eq of shuffle(selectedReal)) {
+      if (chosen.length >= desiredCount) break;
+      const usesEq = movementsForEquipment(eq, eff, input.level).filter((m) => !usedIds.has(m.id));
+      if (!usesEq.length) continue;
+      // among movements that use this gear, prefer the modality the goal favors
+      // (e.g. strength + dumbbells → a loaded DB lift, cardio + rower → calories)
+      const maxW = Math.max(...usesEq.map((m) => weighting[m.modality] ?? 0));
+      const best = usesEq.filter((m) => (weighting[m.modality] ?? 0) === maxW);
+      add(pick(best.length ? best : usesEq));
+    }
+  }
+
+  // ---- 2) fill remaining slots by goal-weighted modality draw ----
   const buckets: { pool: Movement[]; weight: number }[] = [
     { pool: wl, weight: wl.length ? weighting.weightlifting : 0 },
     { pool: gym, weight: gym.length ? weighting.gymnastics : 0 },
     { pool: cardio, weight: cardio.length ? weighting.cardio : 0 },
   ].filter((b) => b.pool.length > 0 && b.weight > 0);
 
-  const chosen: Movement[] = [];
-  const usedIds = new Set<string>();
   let guard = 0;
-  while (chosen.length < desiredCount && guard < 40) {
+  while (chosen.length < desiredCount && guard < 40 && buckets.length) {
     guard++;
-    if (!buckets.length) break;
-    // weighted pick of a bucket
     const total = buckets.reduce((s, b) => s + b.weight, 0);
     let r = Math.random() * total;
     let bucket = buckets[0];
@@ -246,21 +296,14 @@ function chooseMetconMovements(
     }
     const candidates = bucket.pool.filter((m) => !usedIds.has(m.id));
     if (!candidates.length) {
-      // exhausted this bucket
-      const idx = buckets.indexOf(bucket);
-      buckets.splice(idx, 1);
+      buckets.splice(buckets.indexOf(bucket), 1);
       continue;
     }
-    const m = pick(candidates);
-    usedIds.add(m.id);
-    chosen.push(m);
+    add(pick(candidates));
   }
 
   // guarantee at least one movement
-  if (!chosen.length) {
-    const any = poolWithFallback('gymnastics', input.level, eff);
-    if (any.length) chosen.push(pick(any));
-  }
+  if (!chosen.length && everyAvail.length) add(pick(everyAvail));
   return chosen;
 }
 

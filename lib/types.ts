@@ -15,7 +15,9 @@ export type Equipment =
   | 'jump_rope'
   | 'box'
   | 'rings'
-  | 'cardio_machine' // rower / bike / skierg
+  | 'rower'
+  | 'bike'
+  | 'skierg'
   | 'full_gym'
   | 'park';
 

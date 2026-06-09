@@ -147,11 +147,31 @@ export const RingsIcon = (p: P) => (
   </S>
 );
 
-export const CardioMachineIcon = (p: P) => (
+export const BikeIcon = (p: P) => (
   <S {...p}>
     <circle cx="6.5" cy="16" r="3.2" />
     <circle cx="17.5" cy="16" r="3.2" />
     <path d="M6.5 16l3.5-7h4l3 7M10 9l5 0M14 9l2-3h2" />
+  </S>
+);
+
+export const RowerIcon = (p: P) => (
+  <S {...p}>
+    {/* rail + seat + handle on a chain */}
+    <path d="M3 18h18" />
+    <path d="M5 18l2-5h4l2 4" />
+    <circle cx="17" cy="7" r="2" />
+    <path d="M15.5 8.5l-4 3" />
+    <path d="M11.5 11.5l-1.5 1.5" />
+  </S>
+);
+
+export const SkiergIcon = (p: P) => (
+  <S {...p}>
+    {/* upright erg: monitor on a post + two pull straps */}
+    <rect x="9" y="3" width="6" height="4" rx="1" />
+    <path d="M12 7v13" />
+    <path d="M10 8c-1 3-1.5 6-3 9M14 8c1 3 1.5 6 3 9" />
   </S>
 );
 
@@ -184,7 +204,9 @@ const MAP: Record<string, (p: P) => React.ReactElement> = {
   jump_rope: JumpRopeIcon,
   box: BoxIcon,
   rings: RingsIcon,
-  cardio_machine: CardioMachineIcon,
+  rower: RowerIcon,
+  bike: BikeIcon,
+  skierg: SkiergIcon,
   full_gym: FullGymIcon,
   park: ParkIcon,
 };

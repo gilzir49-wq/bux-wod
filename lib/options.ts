@@ -25,7 +25,9 @@ export const EQUIPMENT_OPTIONS: { value: Equipment; label: string; emoji: string
   { value: 'jump_rope', label: 'חבל קפיצה', emoji: '🪢' },
   { value: 'box', label: 'תיבה / ספסל', emoji: '📦' },
   { value: 'rings', label: 'טבעות', emoji: '⭕' },
-  { value: 'cardio_machine', label: 'מכונת קרדיו', emoji: '🚣' },
+  { value: 'rower', label: 'מכונת חתירה', emoji: '🚣' },
+  { value: 'bike', label: 'אופני כושר', emoji: '🚴' },
+  { value: 'skierg', label: 'סקי ארג', emoji: '⛷️' },
   { value: 'full_gym', label: 'חדר כושר מלא', emoji: '🏟️' },
   { value: 'park', label: 'פארק פתוח', emoji: '🌳' },
 ];
