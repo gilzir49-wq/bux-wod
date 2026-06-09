@@ -1,4 +1,4 @@
-import { Movement } from './types';
+import { Movement, Equipment } from './types';
 import { VIDEO } from './youtube-map';
 
 const watch = (id: string) => `https://www.youtube.com/watch?v=${id}`;
@@ -672,6 +672,10 @@ export interface WarmupMove {
   name: string;
   detail: string;
   youtube: string;
+  // If set, this move needs that equipment — the engine drops it from the
+  // pool when the athlete doesn't have it (so a bodyweight-only warm-up never
+  // prescribes e.g. Scapular Pull-ups with no bar around).
+  needs?: Equipment;
 }
 
 export const WARMUP_POOL: WarmupMove[] = [
@@ -683,8 +687,8 @@ export const WARMUP_POOL: WarmupMove[] = [
   { name: 'Air Squat', detail: '15 חזרות', youtube: vidOr('air_squat', 'air squat') },
   { name: 'Spiderman Lunge', detail: '8 לכל צד', youtube: vidOr('wu:spiderman_lunge', 'spiderman lunge') },
   { name: 'Hip Circles', detail: '10 לכל כיוון', youtube: vidOr('wu:hip_circles', 'hip circles mobility') },
-  { name: 'Scapular Pull-ups', detail: '8 חזרות', youtube: vidOr('wu:scap_pullups', 'scapular pull ups') },
-  { name: 'PVC/Band Pass-throughs', detail: '10 חזרות', youtube: vidOr('wu:pass_throughs', 'shoulder pass throughs') },
+  { name: 'Scapular Pull-ups', detail: '8 חזרות', youtube: vidOr('wu:scap_pullups', 'scapular pull ups'), needs: 'pullup_bar' },
+  { name: 'Shoulder Pass-throughs', detail: '10 חזרות (מקל או מגבת)', youtube: vidOr('wu:pass_throughs', 'shoulder pass throughs') },
   { name: 'High Knees', detail: '30 שניות', youtube: vidOr('high_knees', 'high knees') },
   { name: 'Cossack Squat', detail: '6 לכל צד', youtube: vidOr('wu:cossack_squat', 'cossack squat') },
 ];

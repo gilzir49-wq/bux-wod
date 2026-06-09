@@ -134,10 +134,13 @@ function prescribe(m: Movement, level: Level, repsOverride?: number): Prescribed
 }
 
 // ---------- warm-up & cool-down ----------
-function buildWarmup(time: number): WorkoutSection {
+function buildWarmup(time: number, eff: Set<Equipment>): WorkoutSection {
   const mins = warmupMinutes(time);
   const count = time <= 20 ? 4 : time <= 40 ? 5 : 6;
-  const moves: WarmupMove[] = sample(WARMUP_POOL, count);
+  // Drop warm-up moves whose required equipment the athlete doesn't have, so a
+  // bodyweight-only warm-up stays fully doable (no "Scapular Pull-ups" w/o a bar).
+  const pool = WARMUP_POOL.filter((w) => !w.needs || eff.has(w.needs));
+  const moves: WarmupMove[] = sample(pool, count);
   return {
     title: 'חימום',
     durationLabel: `${mins} דק׳`,
@@ -450,7 +453,7 @@ export function generateWorkout(input: GeneratorInput): Workout {
   const mainMinutes = Math.max(6, input.time - wMin - cMin);
 
   const ctx: BuildCtx = { input, eff, mainMinutes };
-  const warmup = buildWarmup(input.time);
+  const warmup = buildWarmup(input.time, eff);
   const main = buildMain(ctx);
   const cooldown = buildCooldown(input.time);
 

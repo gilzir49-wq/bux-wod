@@ -1,8 +1,10 @@
-// BUX WOD service worker — offline support.
-// Strategy: precache the app shell, then serve navigations from cache first
-// (so saved workouts work fully offline). Workout generation is 100% local,
-// so once the shell is cached the whole app works with no network.
-const CACHE = 'bux-wod-v1';
+// BUX WOD service worker — offline support + safe updates.
+// Strategy: NETWORK-FIRST for navigations (so a returning user always gets the
+// latest deployed version when online, and never a stale index.html pointing at
+// chunk hashes that no longer exist), falling back to the cached shell when
+// offline. Hashed static assets use stale-while-revalidate. Bump CACHE on any
+// strategy/asset change so old installs self-heal on activate.
+const CACHE = 'bux-wod-v2';
 const SHELL = [
   './',
   './index.html',
@@ -39,20 +41,18 @@ self.addEventListener('fetch', (event) => {
   // Never cache YouTube / cross-origin demo links — let them hit the network.
   if (url.origin !== self.location.origin) return;
 
-  // Navigations: cache-first with network fallback, then app shell.
+  // Navigations: network-first (fresh deploy wins), cached shell when offline.
   if (req.mode === 'navigate') {
     event.respondWith(
-      caches.match(req).then(
-        (cached) =>
-          cached ||
-          fetch(req)
-            .then((res) => {
-              const copy = res.clone();
-              caches.open(CACHE).then((c) => c.put(req, copy));
-              return res;
-            })
-            .catch(() => caches.match('./index.html').then((r) => r || caches.match('./'))),
-      ),
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy));
+          return res;
+        })
+        .catch(() =>
+          caches.match(req).then((r) => r || caches.match('./index.html')).then((r) => r || caches.match('./')),
+        ),
     );
     return;
   }
