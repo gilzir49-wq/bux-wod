@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useApp } from './AppContext';
 import {
   Section,
@@ -9,7 +9,7 @@ import {
   cmpResults,
   fmtDate,
   isoToDate,
-  todayISO,
+  toSecs,
   weekOf,
 } from '@/lib/cloud';
 
@@ -108,6 +108,10 @@ function MetricRow({ sectionId, label, unit }: { sectionId: string; label: strin
   const ex = findMyResult(sectionId, label);
   const [val, setVal] = useState(ex?.value || '');
   const [showHist, setShowHist] = useState(false);
+  // keep the field in sync when cloud data loads or the day changes
+  useEffect(() => {
+    setVal(ex?.value || '');
+  }, [ex?.value, sectionId, label]);
 
   const hist = useMemo(
     () =>
@@ -155,7 +159,8 @@ function MetricRow({ sectionId, label, unit }: { sectionId: string; label: strin
               .slice()
               .reverse()
               .map((h) => {
-                const isBest = !!best && (Number(h.value.replace(':', '.')) || parseFloat(h.value)) >= 0 && h.value === best.display;
+                const n = toSecs(h.value) ?? parseFloat(h.value);
+                const isBest = !!best && n === best.n;
                 return (
                   <div key={h.id} className="flex justify-between py-1 text-[13px]">
                     <span className="text-bux-green/70">{fmtDate(h.date)}</span>
