@@ -22,15 +22,15 @@ const oswald = Oswald({
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 export const metadata: Metadata = {
-  title: 'BUX WOD — אימון בכל מקום',
+  title: 'CrossFit BUX — האפליקציה',
   description:
-    'מחולל אימוני CrossFit של CrossFit BUX. בחרו זמן, רמה וציוד — וקבלו אימון מלא בכל מקום בעולם. 🦌',
+    'אפליקציית CrossFit BUX יהוד: האימון היומי, מחולל אימונים, הזנת תוצאות ומעקב שיאים. 🦌',
   manifest: `${basePath}/manifest.json`,
-  applicationName: 'BUX WOD',
+  applicationName: 'CrossFit BUX',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'BUX WOD',
+    title: 'CrossFit BUX',
   },
   icons: {
     icon: `${basePath}/icons/icon-192.png`,

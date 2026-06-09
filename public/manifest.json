@@ -1,7 +1,7 @@
 {
-  "name": "BUX WOD — אימון בכל מקום",
-  "short_name": "BUX WOD",
-  "description": "מחולל אימוני CrossFit של CrossFit BUX. אימון מלא בכל מקום בעולם.",
+  "name": "CrossFit BUX — האפליקציה",
+  "short_name": "CrossFit BUX",
+  "description": "אפליקציית CrossFit BUX יהוד: האימון היומי, מחולל אימונים, הזנת תוצאות ומעקב שיאים.",
   "lang": "he",
   "dir": "rtl",
   "start_url": "./",
