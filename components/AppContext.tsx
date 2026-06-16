@@ -14,17 +14,23 @@ import {
   ResultEntry,
   UserRec,
   addDays,
+  bumpVisit,
   deleteResult,
   fetchProgram,
   fetchProgramDates,
   fetchResults,
   fetchUsers,
+  fetchVisits,
   genId,
   putResult,
   putUser,
   sha,
   todayISO,
 } from '@/lib/cloud';
+
+// Module-level guard: count one visit per app open (survives React StrictMode's
+// double-mount in dev, and any provider remounts within the same page load).
+let visitCounted = false;
 
 export type Tab = 'daily' | 'generate' | 'profile' | 'coach';
 export interface SessionUser {
@@ -44,6 +50,7 @@ interface AppCtx {
   setSelDate: (d: string) => void;
   program: Program | null;
   loadingProgram: boolean;
+  visits: number;
   // actions
   auth: (name: string, code: string) => Promise<string | null>; // returns error msg or null
   logout: () => void;
@@ -79,6 +86,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [selDate, setSelDate] = useState<string>(todayISO());
   const [program, setProgram] = useState<Program | null>(null);
   const [loadingProgram, setLoadingProgram] = useState(true);
+  const [visits, setVisits] = useState(0);
 
   // restore session
   useEffect(() => {
@@ -87,6 +95,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (u && u.uid) setUser(u);
       if (sessionStorage.getItem('bux_coach') === '1') setCoachOn(true);
     } catch {}
+  }, []);
+
+  // count this app open (once per page load) and load the running total
+  useEffect(() => {
+    (async () => {
+      if (!visitCounted) {
+        visitCounted = true;
+        await bumpVisit();
+      }
+      setVisits(await fetchVisits());
+    })();
   }, []);
 
   const refresh = useCallback(async () => {
@@ -282,6 +301,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setSelDate,
     program,
     loadingProgram,
+    visits,
     auth,
     logout,
     unlockCoach,

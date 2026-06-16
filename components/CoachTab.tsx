@@ -202,7 +202,7 @@ function Editor() {
 
 /* ---------------- Tracking ---------------- */
 function Tracking() {
-  const { results, users, selDate, setSelDate, program } = useApp();
+  const { results, users, selDate, setSelDate, program, visits } = useApp();
   const [pick, setPick] = useState('');
 
   const real = results.filter((r) => r.metricLabel !== '__att__');
@@ -226,6 +226,11 @@ function Tracking() {
         <button onClick={() => setSelDate(addDays(selDate, 1))} className="press px-3 text-lg">›</button>
         <div className="text-sm font-extrabold text-bux-green">{fmtDate(selDate)}</div>
         <button onClick={() => setSelDate(addDays(selDate, -1))} className="press px-3 text-lg">‹</button>
+      </div>
+
+      <div className="mt-3 flex items-center justify-between rounded-2xl bg-bux-green px-4 py-3 shadow-card">
+        <div className="text-sm font-bold text-white/90">👀 כניסות לאפליקציה</div>
+        <div className="text-2xl font-black text-bux-yellow tabular-nums">{visits.toLocaleString('he-IL')}</div>
       </div>
 
       <div className="mt-3 rounded-2xl bg-white p-4 shadow-card">

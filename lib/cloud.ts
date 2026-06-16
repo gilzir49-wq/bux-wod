@@ -112,6 +112,27 @@ export async function putUser(uid: string, u: Omit<UserRec, 'uid'>): Promise<voi
   });
 }
 
+// ---------- visit counter (atomic, shared across all members) ----------
+// Counts every app open. Uses Firebase RTDB's server-side `increment` so
+// concurrent opens never clobber each other (no read-then-write race).
+export async function bumpVisit(): Promise<void> {
+  try {
+    await fetch(ep('stats'), {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        visits: { '.sv': { increment: 1 } },
+        lastVisit: Date.now(),
+      }),
+    });
+  } catch {
+    /* non-fatal — a missed count must never break app load */
+  }
+}
+export async function fetchVisits(): Promise<number> {
+  return getJSON<number>('stats/visits', 0);
+}
+
 // ---------- helpers ----------
 export async function sha(s: string): Promise<string> {
   const buf = await crypto.subtle.digest(
