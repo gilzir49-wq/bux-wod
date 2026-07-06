@@ -24,12 +24,11 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      # For a project site served from /<repo>, expose the base path.
-      # Remove this env line if deploying to a user/org site (root domain).
+      # Served from the custom domain app.crossfitbux.com at ROOT, so no base
+      # path. (If the custom domain is ever removed and it goes back to
+      # gilzir49-wq.github.io/bux-wod, set NEXT_PUBLIC_BASE_PATH: /bux-wod here.)
       - name: Build (static export)
         run: npm run build
-        env:
-          NEXT_PUBLIC_BASE_PATH: ${{ github.event.repository.name != github.repository_owner && format('/{0}', github.event.repository.name) || '' }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: out
