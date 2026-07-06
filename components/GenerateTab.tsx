@@ -27,10 +27,21 @@ import {
 } from '@/components/Icons';
 import { buildShareText, buildAppShareText } from '@/lib/share';
 import { deleteWorkout, getSavedWorkouts, rateWorkout, saveWorkout } from '@/lib/storage';
+import {
+  bumpVisit,
+  fetchVisits,
+  fetchReviews,
+  addReview,
+  pickSpotlight,
+  Review,
+} from '@/lib/community';
 
 type Screen = 'home' | 'generating' | 'result' | 'saved';
 
 const BUILD_MS = 1500;
+
+// Count one visit per app open (survives StrictMode's double-mount in dev).
+let visitCounted = false;
 
 export default function GenerateTab() {
   const [screen, setScreen] = useState<Screen>('home');
@@ -48,9 +59,43 @@ export default function GenerateTab() {
   const [savedList, setSavedList] = useState<Workout[]>([]);
   const [toast, setToast] = useState<string | null>(null);
 
+  // community: visit counter + rotating member review
+  const [visits, setVisits] = useState(0);
+  const [spotlight, setSpotlight] = useState<Review | null>(null);
+  // review form (on the result screen)
+  const [rvName, setRvName] = useState('');
+  const [rvText, setRvText] = useState('');
+  const [rvSent, setRvSent] = useState(false);
+
   useEffect(() => {
     setSavedList(getSavedWorkouts());
   }, [screen]);
+
+  // count this open, load the running total + a random happy review to show
+  useEffect(() => {
+    (async () => {
+      if (!visitCounted) {
+        visitCounted = true;
+        await bumpVisit();
+      }
+      setVisits(await fetchVisits());
+      setSpotlight(pickSpotlight(await fetchReviews()));
+    })();
+  }, []);
+
+  async function handlePublishReview() {
+    if (!workout) return;
+    if (rvText.trim().length < 2) {
+      flash('כתבו מילה טובה על האימון 🙏');
+      return;
+    }
+    await addReview({ name: rvName, text: rvText, rating: workout.rating || 5 });
+    setRvSent(true);
+    setRvName('');
+    setRvText('');
+    flash('תודה! התגובה שלך תופיע למתאמנים 🦌');
+    setSpotlight(pickSpotlight(await fetchReviews()));
+  }
 
   function flash(msg: string) {
     setToast(msg);
@@ -89,6 +134,7 @@ export default function GenerateTab() {
       const w = generateWorkout(input);
       setWorkout(w);
       setSavedFlag(false);
+      setRvSent(false);
       setScreen('result');
       window.scrollTo({ top: 0 });
     }, BUILD_MS);
@@ -213,6 +259,8 @@ export default function GenerateTab() {
           toggleEquipment={toggleEquipment}
           onGenerate={handleGenerate}
           onShareApp={handleShareApp}
+          visits={visits}
+          spotlight={spotlight}
         />
       )}
 
@@ -222,10 +270,41 @@ export default function GenerateTab() {
         <div className="mt-5">
           <WorkoutView workout={workout} />
 
-          {/* rating */}
-          <div className="mt-6 flex flex-col items-center gap-2 rounded-2xl bg-white p-4 shadow-card">
-            <span className="text-sm font-bold text-bux-green">איך היה האימון?</span>
-            <StarRating value={workout.rating} onChange={handleRate} />
+          {/* rating + share a review (everyone sees these, rotating) */}
+          <div className="mt-6 rounded-2xl bg-white p-4 shadow-card space-y-3">
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-sm font-bold text-bux-green">איך היה האימון?</span>
+              <StarRating value={workout.rating} onChange={handleRate} />
+            </div>
+            {rvSent ? (
+              <p className="text-center text-sm font-bold text-bux-green">
+                תודה ששיתפת! 🦌 התגובה שלך תעודד אחרים.
+              </p>
+            ) : (
+              <>
+                <input
+                  value={rvName}
+                  onChange={(e) => setRvName(e.target.value)}
+                  placeholder="השם שלך (לא חובה)"
+                  maxLength={24}
+                  className="w-full rounded-xl border-2 border-bux-green/12 bg-bux-cream/40 px-3 py-2.5 text-sm font-semibold text-bux-green outline-none focus:border-bux-green"
+                />
+                <textarea
+                  value={rvText}
+                  onChange={(e) => setRvText(e.target.value)}
+                  placeholder="ספרו איך היה — מילה טובה שתעודד את הבאים 💬"
+                  maxLength={240}
+                  rows={2}
+                  className="w-full resize-none rounded-xl border-2 border-bux-green/12 bg-bux-cream/40 px-3 py-2.5 text-sm font-semibold text-bux-green outline-none focus:border-bux-green"
+                />
+                <button
+                  onClick={handlePublishReview}
+                  className="press w-full rounded-xl bg-bux-green py-3 text-sm font-black text-white shadow-btn-green active:shadow-none"
+                >
+                  💬 פרסמו תגובה
+                </button>
+              </>
+            )}
           </div>
 
           {/* actions */}
@@ -317,8 +396,11 @@ function HomeScreen(props: {
   toggleEquipment: (e: Equipment) => void;
   onGenerate: () => void;
   onShareApp: () => void;
+  visits: number;
+  spotlight: Review | null;
 }) {
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+  const { visits, spotlight } = props;
   return (
     <div className="mt-4 space-y-7 animate-fade-up">
       {/* Hero */}
@@ -340,7 +422,33 @@ function HomeScreen(props: {
         <p className="mx-auto mt-2 max-w-[19rem] text-sm font-semibold leading-relaxed text-bux-green-light">
           מילואים, חופשה, פארק או חצר — תגידו כמה זמן יש לכם, ונבנה לכם אימון אמיתי.
         </p>
+
+        {/* live visit counter */}
+        {visits > 0 && (
+          <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-bux-green px-3.5 py-1.5 text-white shadow-card">
+            <span className="text-sm">👀</span>
+            <span className="display text-sm font-bold text-bux-yellow tabular-nums">
+              {visits.toLocaleString('he-IL')}
+            </span>
+            <span className="text-xs font-bold text-white/90">נכנסו להתאמן</span>
+          </div>
+        )}
       </div>
+
+      {/* rotating member review — different one each visit */}
+      {spotlight && (
+        <div className="rounded-2xl border-2 border-bux-yellow/40 bg-white p-4 shadow-card animate-pop">
+          <div className="text-bux-yellow" dir="ltr">
+            {'★'.repeat(Math.max(1, Math.min(5, spotlight.rating)))}
+          </div>
+          <p className="mt-1.5 text-[15px] font-semibold leading-relaxed text-bux-green">
+            “{spotlight.text}”
+          </p>
+          <div className="mt-1.5 text-xs font-bold text-bux-green-light">
+            — {spotlight.name || 'מתאמן/ת BUX'} 🦌
+          </div>
+        </div>
+      )}
 
       {/* Time */}
       <Field step={1} label="כמה זמן יש לכם?">
