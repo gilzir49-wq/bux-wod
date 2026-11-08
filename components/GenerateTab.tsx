@@ -10,9 +10,10 @@ import {
   GOAL_OPTIONS,
   LEVEL_OPTIONS,
   TIME_OPTIONS,
+  STRUCTURE_OPTIONS,
   LEVEL_LABEL,
 } from '@/lib/options';
-import { Equipment, Goal, Level, TimeOption, Workout } from '@/lib/types';
+import { Equipment, Goal, Level, TimeOption, Workout, WorkoutStructure } from '@/lib/types';
 import {
   LevelIcon,
   OptionIcon,
@@ -51,6 +52,9 @@ export default function GenerateTab() {
   const [level, setLevel] = useState<Level>('intermediate');
   const [goal, setGoal] = useState<Goal>('general');
   const [equipment, setEquipment] = useState<Equipment[]>(['none']);
+  const [structure, setStructure] = useState<WorkoutStructure>('full');
+  const [includeWarmup, setIncludeWarmup] = useState(true);
+  const [includeCooldown, setIncludeCooldown] = useState(true);
 
   // current workout
   const [workout, setWorkout] = useState<Workout | null>(null);
@@ -127,6 +131,9 @@ export default function GenerateTab() {
     level: Level;
     goal: Goal;
     equipment: Equipment[];
+    structure: WorkoutStructure;
+    includeWarmup: boolean;
+    includeCooldown: boolean;
   }) {
     setScreen('generating');
     window.scrollTo({ top: 0 });
@@ -141,7 +148,7 @@ export default function GenerateTab() {
   }
 
   function handleGenerate() {
-    buildAndShow({ time, level, goal, equipment });
+    buildAndShow({ time, level, goal, equipment, structure, includeWarmup, includeCooldown });
   }
 
   function handleRegenerate() {
@@ -151,6 +158,9 @@ export default function GenerateTab() {
       level: workout.level,
       goal: workout.goal,
       equipment: workout.equipment,
+      structure: workout.structure ?? 'full',
+      includeWarmup: workout.includeWarmup ?? true,
+      includeCooldown: workout.includeCooldown ?? true,
     });
   }
 
@@ -257,6 +267,12 @@ export default function GenerateTab() {
           setGoal={setGoal}
           equipment={equipment}
           toggleEquipment={toggleEquipment}
+          structure={structure}
+          setStructure={setStructure}
+          includeWarmup={includeWarmup}
+          setIncludeWarmup={setIncludeWarmup}
+          includeCooldown={includeCooldown}
+          setIncludeCooldown={setIncludeCooldown}
           onGenerate={handleGenerate}
           onShareApp={handleShareApp}
           visits={visits}
@@ -394,6 +410,12 @@ function HomeScreen(props: {
   setGoal: (g: Goal) => void;
   equipment: Equipment[];
   toggleEquipment: (e: Equipment) => void;
+  structure: WorkoutStructure;
+  setStructure: (s: WorkoutStructure) => void;
+  includeWarmup: boolean;
+  setIncludeWarmup: (v: boolean) => void;
+  includeCooldown: boolean;
+  setIncludeCooldown: (v: boolean) => void;
   onGenerate: () => void;
   onShareApp: () => void;
   visits: number;
@@ -521,6 +543,39 @@ function HomeScreen(props: {
         </div>
       </Field>
 
+      {/* Structure */}
+      <Field step={5} label="מבנה האימון?">
+        <div className="grid grid-cols-3 gap-2.5">
+          {STRUCTURE_OPTIONS.map((s) => (
+            <Chip
+              key={s.value}
+              active={props.structure === s.value}
+              onClick={() => props.setStructure(s.value)}
+              stack
+              icon={<OptionIcon name={s.value} size={24} />}
+            >
+              {s.label}
+            </Chip>
+          ))}
+        </div>
+      </Field>
+
+      {/* Warm-up / cool-down toggles */}
+      <Field step={6} label="חימום והתאוששות?">
+        <div className="grid grid-cols-2 gap-2.5">
+          <ToggleChip
+            label="חימום"
+            on={props.includeWarmup}
+            onToggle={() => props.setIncludeWarmup(!props.includeWarmup)}
+          />
+          <ToggleChip
+            label="שחרור / התאוששות"
+            on={props.includeCooldown}
+            onToggle={() => props.setIncludeCooldown(!props.includeCooldown)}
+          />
+        </div>
+      </Field>
+
       <button
         onClick={props.onGenerate}
         className="press group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-bux-yellow py-5 text-xl font-black text-bux-green shadow-btn active:shadow-none"
@@ -540,6 +595,37 @@ function HomeScreen(props: {
         <ShareIcon size={17} /> שתפו את BUX WOD לחברים
       </button>
     </div>
+  );
+}
+
+// on/off pill for the warm-up / cool-down toggles
+function ToggleChip({
+  label,
+  on,
+  onToggle,
+}: {
+  label: string;
+  on: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      onClick={onToggle}
+      className={`press flex items-center justify-between gap-2 rounded-2xl border-2 px-3.5 py-3 text-[15px] font-bold ${
+        on
+          ? 'border-bux-green bg-bux-green text-white shadow-card'
+          : 'border-bux-green/12 bg-white text-bux-green/55 hairline'
+      }`}
+    >
+      <span className="text-right leading-tight">{label}</span>
+      <span
+        className={`display shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${
+          on ? 'bg-bux-yellow text-bux-green' : 'bg-bux-green/10 text-bux-green/55'
+        }`}
+      >
+        {on ? 'כן' : 'לא'}
+      </span>
+    </button>
   );
 }
 
@@ -578,7 +664,8 @@ function SavedScreen({
               <button onClick={() => onOpen(w)} className="press flex-1 text-right min-w-0">
                 <div className="font-black text-bux-green truncate">{w.title}</div>
                 <div className="display text-xs font-medium text-bux-green-light mt-0.5">
-                  {formatDate(w.createdAt)} · {w.main.format} · {LEVEL_LABEL[w.level]}
+                  {formatDate(w.createdAt)} · {w.main ? w.main.format : w.strength ? 'כוח' : '—'} ·{' '}
+                  {LEVEL_LABEL[w.level]}
                 </div>
                 {typeof w.rating === 'number' && (
                   <div className="mt-1 text-bux-yellow text-sm" dir="ltr">

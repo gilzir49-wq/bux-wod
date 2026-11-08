@@ -1,6 +1,22 @@
-import { Equipment, Goal, Level, TimeOption } from './types';
+import { Equipment, Goal, Level, TimeOption, WorkoutStructure } from './types';
 
 export const TIME_OPTIONS: TimeOption[] = [15, 20, 30, 40, 45, 60];
+
+export const STRUCTURE_OPTIONS: {
+  value: WorkoutStructure;
+  label: string;
+  hint: string;
+}[] = [
+  { value: 'full', label: 'אימון מלא', hint: 'כוח + מטקון' },
+  { value: 'strength', label: 'רק כוח', hint: 'בלוק כוח' },
+  { value: 'metcon', label: 'רק מטקון', hint: 'קונדישן' },
+];
+
+export const STRUCTURE_LABEL: Record<WorkoutStructure, string> = {
+  full: 'אימון מלא',
+  strength: 'כוח',
+  metcon: 'מטקון',
+};
 
 export const LEVEL_OPTIONS: { value: Level; label: string; emoji: string }[] = [
   { value: 'beginner', label: 'מתחיל', emoji: '🌱' },

@@ -46,7 +46,19 @@ export interface Movement {
   tags?: string[];
 }
 
-export type WorkoutFormat = 'AMRAP' | 'For Time' | 'EMOM' | 'Chipper' | 'Rounds For Time';
+export type WorkoutFormat =
+  | 'AMRAP'
+  | 'For Time'
+  | 'EMOM'
+  | 'Chipper'
+  | 'Rounds For Time'
+  | 'Strength';
+
+// What blocks the athlete wants in the workout.
+export type WorkoutStructure =
+  | 'full' // strength block + metcon
+  | 'strength' // strength block only
+  | 'metcon'; // conditioning piece only
 
 export interface PrescribedMovement {
   name: string;
@@ -78,10 +90,16 @@ export interface Workout {
   level: Level;
   goal: Goal;
   equipment: Equipment[];
+  structure: WorkoutStructure;
+  includeWarmup: boolean;
+  includeCooldown: boolean;
   title: string; // Hebrew display title, e.g. "אימון כוח · 30 דק׳"
-  warmup: WorkoutSection;
-  main: MainPiece;
-  cooldown: WorkoutSection;
+  // Sections are null when the athlete turned them off or the structure
+  // doesn't include them (e.g. no metcon when structure === 'strength').
+  warmup: WorkoutSection | null;
+  strength: MainPiece | null; // the strength block (format 'Strength')
+  main: MainPiece | null; // the conditioning / metcon piece
+  cooldown: WorkoutSection | null;
   rating?: number; // 1-5 stars
 }
 
@@ -90,4 +108,7 @@ export interface GeneratorInput {
   level: Level;
   goal: Goal;
   equipment: Equipment[];
+  structure: WorkoutStructure;
+  includeWarmup: boolean;
+  includeCooldown: boolean;
 }

@@ -17,9 +17,10 @@ function sectionToText(s: WorkoutSection): string {
   return `${s.title} (${s.durationLabel}):\n${lines.join('\n')}`;
 }
 
-function mainToText(m: MainPiece): string {
+function mainToText(m: MainPiece, heading: string): string {
   const lines = m.movements.map((mv) => `• ${mv.name} — ${mv.detail}`);
-  return `האימון — ${m.formatLine}:\n${lines.join('\n')}`;
+  const goal = m.goalLine ? `\n🎯 ${m.goalLine}` : '';
+  return `${heading} — ${m.formatLine}:\n${lines.join('\n')}${goal}`;
 }
 
 // Plain-text, WhatsApp/Instagram-friendly summary with a branded caption.
@@ -28,26 +29,24 @@ export function buildShareText(w: Workout): string {
   const header = `🦌 BUX WOD — ${w.title}`;
   const meta = `רמה: ${LEVEL_LABEL[w.level]} · מטרה: ${GOAL_LABEL[w.goal]} · ${w.time} דקות`;
 
+  const blocks: string[] = [];
+  if (w.warmup) blocks.push(sectionToText(w.warmup), '');
+  if (w.strength) blocks.push(mainToText(w.strength, 'כוח'), '');
+  if (w.main) blocks.push(mainToText(w.main, 'האימון'), '');
+  if (w.cooldown) blocks.push(sectionToText(w.cooldown), '');
+
   return [
     header,
     meta,
     '',
-    sectionToText(w.warmup),
-    '',
-    mainToText(w.main),
-    w.main.goalLine ? `🎯 ${w.main.goalLine}` : '',
-    '',
-    sectionToText(w.cooldown),
-    '',
+    ...blocks,
     '— — —',
     caption,
     '',
     '🔗 בנו אימון BUX משלכם, בכל מקום:',
     appUrl(),
     'Let’s Go BUX 🦌',
-  ]
-    .filter((l) => l !== undefined)
-    .join('\n');
+  ].join('\n');
 }
 
 // Short text for sharing the app itself (so members spread it to friends).

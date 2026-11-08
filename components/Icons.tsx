@@ -209,6 +209,9 @@ const MAP: Record<string, (p: P) => React.ReactElement> = {
   skierg: SkiergIcon,
   full_gym: FullGymIcon,
   park: ParkIcon,
+  // workout-structure options (strength already maps above)
+  full: GeneralIcon,
+  metcon: CardioIcon,
 };
 
 export function OptionIcon({ name, size = 24, className }: P & { name: string }) {

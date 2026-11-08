@@ -43,33 +43,36 @@ const EQUIP_SETS = [
 
 let runs = 0, checks = 0, violations = [], covChecks = 0;
 const REPEAT = 6; // each combo several times (engine is randomized)
+const STRUCTURES = ['full', 'strength', 'metcon'];
 const hasMov = (eq, eff) => MOVEMENTS.some((m) => m.equipment.includes(eq) && m.equipment.some((e) => eff.has(e)));
 
 for (const equipment of EQUIP_SETS) {
   const eff = effOf(equipment);
   for (const time of TIMES) for (const level of LEVELS) for (const goal of GOALS) {
-    for (let r = 0; r < REPEAT; r++) {
-      const w = generateWorkout({ time, level, goal, equipment });
+    for (const structure of STRUCTURES) for (let r = 0; r < REPEAT; r++) {
+      const w = generateWorkout({ time, level, goal, equipment, structure, includeWarmup: true, includeCooldown: true });
       runs++;
-      const all = [...w.warmup.movements, ...w.main.movements, ...w.cooldown.movements];
+      const blocks = [w.warmup, w.strength, w.main, w.cooldown].filter(Boolean);
+      const all = blocks.flatMap((b) => b.movements);
 
-      // COVERAGE: every selected piece of gear that has a usable movement must
-      // actually appear in the MAIN piece (up to the number of main slots).
+      // COVERAGE applies to the metcon (when present). A strength-only block is
+      // a single lift and isn't expected to cover every selected piece of gear.
       const wildcard = equipment.includes('full_gym') || equipment.includes('park');
       const selectedReal = equipment.filter((e) => e !== 'none');
-      if (selectedReal.length && !wildcard) {
+      if (w.main && selectedReal.length && !wildcard) {
         const mainEq = new Set(w.main.movements.flatMap((pm) => byName.get(pm.name)?.equipment || []));
         const coverable = selectedReal.filter((eq) => hasMov(eq, eff));
         const covered = coverable.filter((eq) => mainEq.has(eq));
         const expected = Math.min(coverable.length, w.main.movements.length);
         covChecks++;
         if (covered.length < expected)
-          violations.push(`COVERAGE: equip=[${equipment}] ${level}/${goal} t=${time} — covered ${covered.length}/${expected} (main uses [${[...mainEq]}])`);
+          violations.push(`COVERAGE: equip=[${equipment}] ${level}/${goal} t=${time} s=${structure} — covered ${covered.length}/${expected}`);
       }
-      // sanity: structure present
-      if (!w.warmup.movements.length || !w.main.movements.length || !w.cooldown.movements.length) {
-        violations.push(`EMPTY SECTION: equip=${equipment} t=${time} ${level}/${goal}`);
-      }
+      // sanity: warm-up + cool-down present (toggles on) and a work block exists
+      if (!w.warmup || !w.warmup.movements.length) violations.push(`NO WARMUP: ${equipment} s=${structure}`);
+      if (!w.cooldown || !w.cooldown.movements.length) violations.push(`NO COOLDOWN: ${equipment} s=${structure}`);
+      if (!w.strength?.movements.length && !w.main?.movements.length)
+        violations.push(`EMPTY WORK: equip=${equipment} t=${time} ${level}/${goal} s=${structure}`);
       for (const pm of all) {
         // gated warm-up/cool-down mobility move (e.g. Scapular Pull-ups → bar)
         if (GATED.has(pm.name)) {

@@ -131,6 +131,9 @@ function BoardRow({ m }: { m: PrescribedMovement }) {
 }
 
 function MainBoard({ main }: { main: MainPiece }) {
+  const isStrength = main.format === 'Strength';
+  const header = isStrength ? 'בלוק כוח' : 'האימון';
+  const badge = isStrength ? 'כוח' : main.format;
   return (
     <section className="board relative rounded-3xl shadow-[0_12px_30px_-8px_rgba(20,54,32,0.5)] overflow-hidden animate-fade-up">
       {/* top accent line */}
@@ -139,10 +142,10 @@ function MainBoard({ main }: { main: MainPiece }) {
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-bux-yellow">
             <MainGlyph />
-            <span className="text-lg font-black text-white">האימון</span>
+            <span className="text-lg font-black text-white">{header}</span>
           </div>
           <span className="display rounded-lg bg-bux-yellow px-3 py-1 text-sm font-bold uppercase tracking-wider text-bux-green">
-            {main.format}
+            {badge}
           </span>
         </div>
 
@@ -169,7 +172,13 @@ function MainBoard({ main }: { main: MainPiece }) {
 }
 
 export default function WorkoutView({ workout }: { workout: Workout }) {
-  const pills = [workout.main.format, LEVEL_LABEL[workout.level], `${workout.time} דק׳`, GOAL_LABEL[workout.goal]];
+  const mainFmt = workout.main ? workout.main.format : workout.strength ? 'כוח' : '';
+  const pills = [
+    mainFmt,
+    LEVEL_LABEL[workout.level],
+    `${workout.time} דק׳`,
+    GOAL_LABEL[workout.goal],
+  ].filter(Boolean);
   return (
     <div className="space-y-4">
       <div className="text-center">
@@ -191,9 +200,12 @@ export default function WorkoutView({ workout }: { workout: Workout }) {
         </div>
       </div>
 
-      <SectionCard section={workout.warmup} glyph={<WarmupGlyph />} tone="warm" />
-      <MainBoard main={workout.main} />
-      <SectionCard section={workout.cooldown} glyph={<CooldownGlyph />} tone="cool" />
+      {workout.warmup && <SectionCard section={workout.warmup} glyph={<WarmupGlyph />} tone="warm" />}
+      {workout.strength && <MainBoard main={workout.strength} />}
+      {workout.main && <MainBoard main={workout.main} />}
+      {workout.cooldown && (
+        <SectionCard section={workout.cooldown} glyph={<CooldownGlyph />} tone="cool" />
+      )}
     </div>
   );
 }

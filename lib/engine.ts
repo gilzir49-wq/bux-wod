@@ -457,6 +457,75 @@ function buildChipper(ctx: BuildCtx, weighting: ReturnType<typeof goalWeighting>
   };
 }
 
+// ---------- strength block ----------
+// Priority list of lifts per goal. The engine picks the first few that the
+// athlete's gear supports, so "רק כוח" with a barbell → a real squat/deadlift,
+// with only a body → a gymnastics strength lift (pull-ups, handstand push-ups).
+const STRENGTH_PRIORITY: Record<Goal, string[]> = {
+  strength: ['bb_back_squat', 'bb_front_squat', 'bb_deadlift', 'bb_clean', 'bb_push_press', 'bb_overhead_press', 'db_push_press', 'db_goblet_squat', 'kb_goblet_clean', 'pullup', 'handstand_pushup', 'pushup'],
+  general: ['bb_back_squat', 'bb_deadlift', 'bb_front_squat', 'db_push_press', 'db_goblet_squat', 'kb_goblet_clean', 'pullup', 'pushup'],
+  gymnastics: ['handstand_pushup', 'pullup', 'ring_dip', 'pike_pushup', 'pushup', 'bb_front_squat', 'bb_overhead_press'],
+  cardio: ['bb_deadlift', 'db_goblet_squat', 'kb_goblet_clean', 'bb_back_squat', 'pullup', 'pushup'],
+};
+
+function pickStrengthLift(ctx: BuildCtx): Movement | null {
+  const { input, eff } = ctx;
+  const pri = STRENGTH_PRIORITY[input.goal] || STRENGTH_PRIORITY.general;
+  const avail = pri
+    .map((id) => MOVEMENTS.find((m) => m.id === id))
+    .filter((m): m is Movement => !!m && movementAvailable(m, eff));
+  if (!avail.length) {
+    const wl = poolWithFallback('weightlifting', input.level, eff);
+    if (wl.length) return pick(wl);
+    const gym = poolWithFallback('gymnastics', input.level, eff);
+    return gym.length ? pick(gym) : null;
+  }
+  const levelMatch = avail.filter((m) => m.levels.includes(input.level));
+  const pool = levelMatch.length ? levelMatch : avail;
+  // top of the priority list, with a little variety across regenerations
+  return pick(pool.slice(0, 3));
+}
+
+function buildStrength(ctx: BuildCtx, minutes: number): MainPiece | null {
+  const lift = pickStrengthLift(ctx);
+  if (!lift) return null;
+  const level = ctx.input.level;
+  const sets = Math.max(3, Math.min(7, Math.round(minutes / 2.5)));
+  const isBw = lift.modality !== 'weightlifting';
+  let reps: number;
+  let loadNote: string;
+  if (isBw) {
+    reps =
+      level === 'advanced'
+        ? Math.max(3, Math.round(lift.baseReps * 0.7))
+        : Math.max(5, Math.round(lift.baseReps * LEVEL_REP_MULT[level]));
+    loadNote = 'עד סמוך לכשל טכני';
+  } else if (level === 'beginner') {
+    reps = 5;
+    loadNote = 'עומס בינוני-מאתגר';
+  } else if (level === 'intermediate') {
+    reps = 5;
+    loadNote = 'עלו במשקל בהדרגה';
+  } else {
+    reps = 3;
+    loadNote = 'עומס כבד';
+  }
+  const rest = level === 'beginner' ? '90 שניות' : '2-3 דקות';
+  const detail = `${sets} סטים × ${reps} חזרות · ${loadNote} · מנוחה ${rest}`;
+  const goalLine = isBw
+    ? `כל סט חזק ונקי עד סמוך לכשל. נוחו ${rest} בין סטים כדי לשמור על איכות.`
+    : `עלו במשקל מסט לסט עד עומס מאתגר ל-${reps} חזרות. טכניקה לפני משקל — עצרו אם היא נשברת.`;
+  return {
+    format: 'Strength',
+    formatLine: `בלוק כוח — ${lift.name} · ${sets}×${reps}`,
+    goalLine,
+    movements: [{ name: lift.name, detail, youtube: lift.youtube, scaling: lift.scaling }],
+    note: isBw
+      ? 'זה בלוק כוח — איכות לפני כמות, בלי מרוץ נגד השעון.'
+      : 'חממו עם 1-2 סטים קלים לפני הסט הכבד הראשון. בלוק כוח — לא על זמן.',
+  };
+}
+
 // ---------- rep scaling helpers ----------
 function repScaleForAmrap(ctx: BuildCtx) {
   // smaller rounds so multiple rounds happen.
@@ -489,18 +558,39 @@ function amrapGoalLine(moves: Movement[]): string {
 }
 
 // ---------- public API ----------
+const STRUCTURE_TITLE = {
+  full: 'אימון מלא',
+  strength: 'אימון כוח',
+  metcon: 'מטקון',
+} as const;
+
 export function generateWorkout(input: GeneratorInput): Workout {
   const eff = effectiveEquipment(input.equipment);
-  const wMin = warmupMinutes(input.time);
-  const cMin = cooldownMinutes(input.time);
-  const mainMinutes = Math.max(6, input.time - wMin - cMin);
+  const wMin = input.includeWarmup ? warmupMinutes(input.time) : 0;
+  const cMin = input.includeCooldown ? cooldownMinutes(input.time) : 0;
+  const available = Math.max(6, input.time - wMin - cMin);
 
-  const ctx: BuildCtx = { input, eff, mainMinutes };
-  const warmup = buildWarmup(input.time, eff);
-  const main = buildMain(ctx);
-  const cooldown = buildCooldown(input.time);
+  let strength: MainPiece | null = null;
+  let main: MainPiece | null = null;
 
-  const title = `אימון ${GOAL_LABEL[input.goal]} · ${input.time} דק׳`;
+  if (input.structure === 'strength') {
+    strength = buildStrength({ input, eff, mainMinutes: available }, available);
+    // if no suitable lift exists for the gear, don't leave an empty workout
+    if (!strength) main = buildMain({ input, eff, mainMinutes: available });
+  } else if (input.structure === 'metcon') {
+    main = buildMain({ input, eff, mainMinutes: available });
+  } else {
+    // full: strength block first, then a shorter metcon — split the time
+    const sMin = Math.max(6, Math.min(available - 6, Math.round(available * 0.4)));
+    const mMin = Math.max(6, available - sMin);
+    strength = buildStrength({ input, eff, mainMinutes: sMin }, sMin);
+    main = buildMain({ input, eff, mainMinutes: mMin });
+  }
+
+  const warmup = input.includeWarmup ? buildWarmup(input.time, eff) : null;
+  const cooldown = input.includeCooldown ? buildCooldown(input.time) : null;
+
+  const title = `${STRUCTURE_TITLE[input.structure]} · ${input.time} דק׳`;
 
   return {
     id: uid(),
@@ -509,8 +599,12 @@ export function generateWorkout(input: GeneratorInput): Workout {
     level: input.level,
     goal: input.goal,
     equipment: input.equipment,
+    structure: input.structure,
+    includeWarmup: input.includeWarmup,
+    includeCooldown: input.includeCooldown,
     title,
     warmup,
+    strength,
     main,
     cooldown,
   };
