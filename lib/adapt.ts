@@ -266,8 +266,10 @@ function strengthAway(s: DiarySection, c: Ctx): string[] | null {
 }
 
 // ---------------------------------------------------------------- time scaling --------------------------------
-// reps/distances actually shortened to fit the time (not just advice).
-function scaleLineTime(text: string, f: number): { text: string; changed: boolean } {
+// Volume (reps/distances) actually shortened to fit the time — for fixed-work
+// formats (for time / rounds). Time-based formats (AMRAP / EMOM / intervals)
+// instead have their DURATION shortened (below), never their reps.
+function scaleVolumeLine(text: string, f: number): { text: string; changed: boolean } {
   if (f >= 1) return { text, changed: false };
   const p = parse(text);
   if (!p.qty || /x/i.test(p.qty) || p.unit === 'sec' || p.unit === 'min' || /^max$/i.test(p.qty)) {
@@ -278,7 +280,90 @@ function scaleLineTime(text: string, f: number): { text: string; changed: boolea
   return { text: withQty(p.prefix, scaled, p.unit, p.rest), changed: true };
 }
 
+// shorten a "Cap N min" / "N min cap" reference in a line or title
+function scaleCapText(text: string, f: number): string {
+  if (f >= 1) return text;
+  return text
+    .replace(/\bcap\s*(\d+)\s*min/gi, (_m, n) => `Cap ${Math.max(1, Math.round(+n * f))} min`)
+    .replace(/(\d+)\s*min\s*cap/gi, (_m, n) => `${Math.max(1, Math.round(+n * f))} min cap`);
+}
+
 const collapsePrimary = (l: string) => (l.includes('>') ? l.split('>')[0]!.trim() : l);
+
+// ---- interval / time-based structure --------------------------------------------------------
+const IV = /(\d+)\s*[x×]\s*(\d+):(\d{2})/i; // "4 x 7:00"
+const AMRAP_N = /\b(amrap|emom)\b[^0-9]*(\d+)/i; // "AMRAP 12", "EMOM 20"
+const secToClock = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
+
+interface Intervals {
+  rounds: number;
+  workSec: number;
+  restSec: number;
+}
+function detectIntervals(title: string, lines: string[]): Intervals | null {
+  const m = IV.exec(title) || lines.map((l) => IV.exec(l)).find(Boolean);
+  if (!m) return null;
+  const rounds = +m[1]!;
+  const workSec = +m[2]! * 60 + +m[3]!;
+  let restSec = 0;
+  for (const l of lines) {
+    const r = /rest\s*(\d+):(\d{2})/i.exec(l) || /(\d+):(\d{2})\s*rest/i.exec(l);
+    if (r) {
+      restSec = +r[1]! * 60 + +r[2]!;
+      break;
+    }
+  }
+  return { rounds, workSec, restSec };
+}
+function totalSec(iv: Intervals): number {
+  return iv.rounds * iv.workSec + Math.max(0, iv.rounds - 1) * iv.restSec;
+}
+// shrink an interval block to fit targetSec: scale work+rest, drop rounds if still over
+function scaleIntervals(iv: Intervals, targetSec: number): Intervals | null {
+  if (totalSec(iv) <= targetSec) return null;
+  const ratio = targetSec / totalSec(iv);
+  const w = Math.max(60, Math.round((iv.workSec * ratio) / 30) * 30);
+  const r = iv.restSec ? Math.max(30, Math.round((iv.restSec * ratio) / 15) * 15) : 0;
+  let n = iv.rounds;
+  while (n > 1 && n * w + (n - 1) * r > targetSec) n--;
+  const out = { rounds: n, workSec: w, restSec: r };
+  return totalSec(out) === totalSec(iv) ? null : out;
+}
+// rewrite a time-based section's title + structure lines to the new, shorter timing
+function adaptTimeStructure(
+  title: string,
+  lines: string[],
+  targetSec: number,
+): { title: string; lines: string[] } | null {
+  const iv = detectIntervals(title, lines);
+  if (iv) {
+    const ni = scaleIntervals(iv, targetSec);
+    if (!ni) return null;
+    const rep = `${ni.rounds} x ${secToClock(ni.workSec)}`;
+    const rewrite = (t: string) =>
+      t
+        .replace(IV, rep)
+        .replace(/rest\s*\d+:\d{2}/i, `Rest ${secToClock(ni.restSec)}`)
+        .replace(/\d+:\d{2}\s*rest/i, `${secToClock(ni.restSec)} rest`);
+    return { title: rewrite(title), lines: lines.map(rewrite) };
+  }
+  // single AMRAP/EMOM duration → just shorten the minutes
+  const src = AMRAP_N.exec(title) || lines.map((l) => AMRAP_N.exec(l)).find(Boolean);
+  if (src) {
+    const curSec = +src[2]! * 60;
+    if (curSec <= targetSec) return null;
+    const nd = Math.max(1, Math.round(targetSec / 60));
+    if (nd === +src[2]!) return null;
+    const rewrite = (t: string) => t.replace(AMRAP_N, (_m, p) => `${String(p).toUpperCase()} ${nd}`);
+    return { title: rewrite(title), lines: lines.map(rewrite) };
+  }
+  return null;
+}
+
+// ---- partner / team wod → solo athlete ------------------------------------------------------
+const PARTNER = /\bpartners?\b|\bpairs?\b|\bteams?\b|\bsync(?:hro)?\b|i go,?\s*you go|you go,?\s*i go/i;
+const PARTNER_ORG =
+  /i go.*you go|you go.*i go|pairs?\s+start|teams?\s+start|partners?\s+start|score\s*=\s*total|each (?:partner|pair|team)|partner (?:does|holds|runs|rows|bikes|carries)|alternate (?:full )?rounds?|split (?:the )?(?:reps|work|rounds)|synchro|one partner (?:works|does|holds)|while (?:one|your) partner|you work\/i rest|share the/i;
 
 const FORMAT_BADGE: Record<string, string> = {
   sets: 'כוח',
@@ -289,66 +374,135 @@ const FORMAT_BADGE: Record<string, string> = {
   rounds: 'סבבים',
   free: '',
 };
-// volume is fixed (so time-scaling the reps makes sense); amrap/emom are time-bounded already
-const FIXED_VOLUME = new Set(['for_time', 'rounds', 'free', 'sets', '']);
+const TIME_FORMATS = new Set(['amrap', 'emom', 'intervals']);
+// fixed-work formats whose reps/distances may be scaled by the time ratio
+const VOLUME_FORMATS = new Set(['for_time', 'rounds', 'free', '']);
+
+// real minutes a section costs (intervals computed from their structure)
+function sectionMinutes(s: DiarySection): number {
+  if (TIME_FORMATS.has(s.format) || IV.test(s.title) || s.lines.some((l) => IV.test(l))) {
+    const iv = detectIntervals(s.title, s.lines);
+    if (iv && totalSec(iv) > 0) return totalSec(iv) / 60;
+  }
+  return s.durationMin ?? s.capMin ?? 0;
+}
 
 // ---------------------------------------------------------------- public --------------------------------------
 export function adaptWod(wod: DiaryWod, equipment: Equipment[], timeMin: number): AdaptedWod {
   const has = buildHas(equipment);
   const c: Ctx = { has, weights: has('dumbbells') || has('kettlebell') };
 
-  const origMinutes = wod.sections.reduce((sum, s) => sum + (s.durationMin ?? s.capMin ?? 0), 0);
-  const factor = origMinutes ? Math.min(1.6, Math.max(0.4, timeMin / origMinutes)) : 1;
+  const mins = wod.sections.map(sectionMinutes);
+  const origMinutes = Math.round(mins.reduce((a, b) => a + b, 0));
+  const strengthMin = wod.sections.reduce((a, s, i) => a + (s.type === 'strength' ? mins[i]! : 0), 0);
+  const hasMetcon = wod.sections.some((s) => s.type !== 'strength' && s.type !== 'warmup');
+  const isPartner = wod.sections.some((s) => PARTNER.test(s.title) || s.lines.some((l) => PARTNER.test(l)));
 
-  const hasWork = wod.sections.some((s) => s.type !== 'strength' && s.type !== 'warmup');
-  const dropStrength = factor < 0.6 && hasWork;
+  // --- time budget ---
+  // Prefer to KEEP the strength and trim the metcon a little; only DROP the
+  // strength when keeping it would crush the metcon below ~70% of its work.
+  // After deciding, the work (metcon) gets whatever minutes are left, and the
+  // scale ratio is recomputed on THAT — never on the full original time.
+  const workMin = Math.max(0, origMinutes - strengthMin);
+  const fits = !origMinutes || timeMin >= origMinutes;
+  const keepMetconFactor = workMin > 0 ? (timeMin - strengthMin) / workMin : 1;
+  const dropStrength = !fits && strengthMin > 0 && hasMetcon && keepMetconFactor < 0.7;
+  const keptStrength = strengthMin > 0 && !dropStrength && !fits;
+  // minutes available to the metcon/work after the kept strength (or all of it, if dropped)
+  const workTarget = fits ? workMin : dropStrength ? timeMin : strengthMin > 0 ? timeMin - strengthMin : timeMin;
+  const factor = fits || workMin === 0 ? 1 : Math.max(0.4, Math.min(1, workTarget / workMin));
+  const needCut = factor < 1;
 
   const out: AdaptedSection[] = [];
   let strengthDropped = false;
+  let didVolume = false;
+  let didTime = false;
+  let soloNoteAdded = false;
 
-  for (const s of wod.sections) {
+  for (let i = 0; i < wod.sections.length; i++) {
+    const s = wod.sections[i]!;
     if (s.type === 'strength' && dropStrength) {
       strengthDropped = true;
       continue;
     }
     const badge = FORMAT_BADGE[s.format] ?? '';
     const isStrength = s.type === 'strength';
-    const scaleVolume = !isStrength && FIXED_VOLUME.has(s.format) && factor < 1;
+    const isTimeFormat =
+      TIME_FORMATS.has(s.format) || detectIntervals(s.title, s.lines) !== null;
 
-    // strength block with no barbell → a clear bodyweight/DB scheme (not "@85%")
-    const swap = strengthAway(s, c);
+    // drop the partner-organisation lines for a solo athlete
+    let rawLines = isPartner ? s.lines.filter((l) => !PARTNER_ORG.test(l)) : s.lines;
+    let title = s.title;
+
+    // time-based formats: shorten the DURATION (not the reps) to the share of time this section gets
+    if (isTimeFormat && needCut) {
+      const target = workMin ? workTarget * 60 * (mins[i]! / workMin) : timeMin * 60;
+      const rew = adaptTimeStructure(title, rawLines, target);
+      if (rew) {
+        title = rew.title;
+        rawLines = rew.lines;
+        didTime = true;
+      }
+    }
+
+    const scaleVol = !isStrength && !isTimeFormat && VOLUME_FORMATS.has(s.format) && factor < 1;
+
+    // strength with no barbell → a clear bodyweight/DB scheme (not "@85%")
+    const swap = strengthAway({ ...s, lines: rawLines }, c);
     let lines: AdaptedLine[];
     if (swap) {
       lines = swap.map((text) => ({ text, swapped: true }));
     } else {
-      lines = s.lines.map((raw) => {
+      lines = rawLines.map((raw) => {
         const r = adaptLine(raw, c);
         let text = r ?? collapsePrimary(raw);
         let swapped = r !== null;
-        if (scaleVolume) {
-          const t = scaleLineTime(text, factor);
+        if (scaleVol) {
+          const capped = scaleCapText(text, factor);
+          if (capped !== text) {
+            text = capped;
+            swapped = true;
+          }
+          const t = scaleVolumeLine(text, factor);
           if (t.changed) {
             text = t.text;
             swapped = true;
+            didVolume = true;
           }
         }
         return { text, swapped };
       });
     }
-    out.push({ type: s.type, title: s.title, titleSwapped: false, badge, lines });
+    if (scaleVol) title = scaleCapText(title, factor);
+
+    // one plain-Hebrew note for a lone athlete, on the first work block
+    if (isPartner && !isStrength && !soloNoteAdded) {
+      lines.unshift({ text: '👤 לבד — עושים כל סבב מלא בעצמכם', swapped: false });
+      soloNoteAdded = true;
+    }
+
+    out.push({ type: s.type, title, titleSwapped: false, badge, lines });
   }
 
   let timeNote: string;
   if (!origMinutes) {
     timeNote = `יש לכם ${timeMin} דקות — בצעו את האימון בקצב שמנצל אותן.`;
+  } else if (strengthDropped && !didVolume && !didTime) {
+    timeNote = `דילגנו על חלק הכוח כדי להספיק את המטקון — הוא נשאר מלא ונכנס ב-${timeMin} דק׳.`;
   } else if (strengthDropped) {
-    timeNote = `רק ${timeMin} דק׳ — דילגנו על חלק הכוח והשארנו את המטקון, עם חזרות ומרחקים מקוצרים. שמרו על עצימות גבוהה.`;
-  } else if (factor < 0.9) {
-    timeNote = `קיצרנו את האימון ל-${timeMin} דק׳ (מתוך ${origMinutes}): החזרות והמרחקים הותאמו. אותו מבנה, אותה עצימות.`;
-  } else if (factor <= 1.15) {
-    timeNote = `הזמן מתאים (${timeMin} דק׳) — בצעו את האימון כפי שהוא.`;
-  } else {
+    timeNote = `דילגנו על חלק הכוח וקיצרנו את המטקון כדי להיכנס ל-${timeMin} דק׳. אותו מבנה, אותה עצימות.`;
+  } else if (keptStrength && (didVolume || didTime)) {
+    timeNote = `שמרנו על חלק הכוח וקיצרנו מעט את המטקון כדי להיכנס ל-${timeMin} דק׳.`;
+  } else if (didVolume && didTime) {
+    timeNote = `קיצרנו את האימון (חזרות, מרחקים ומשך) כדי להיכנס ל-${timeMin} דק׳.`;
+  } else if (didTime) {
+    timeNote = `קיצרנו את משך האימון כדי להיכנס ל-${timeMin} דק׳. אותו מבנה.`;
+  } else if (didVolume) {
+    timeNote = `קיצרנו חזרות ומרחקים כדי להיכנס ל-${timeMin} דק׳. אותו מבנה, אותה עצימות.`;
+  } else if (timeMin > origMinutes * 1.15) {
     timeNote = `יש לכם ${timeMin} דק׳ מול ${origMinutes} במקור — בצעו כמו שהוא, ואם נשאר זמן הוסיפו סבב או חימום/שחרור.`;
+  } else {
+    timeNote = `הזמן מתאים (${timeMin} דק׳) — בצעו את האימון כפי שהוא.`;
   }
 
   return { title: wod.title, date: wod.date, sections: out, timeNote, origMinutes, timeMin };
