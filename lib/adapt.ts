@@ -318,23 +318,32 @@ function detectIntervals(title: string, lines: string[]): Intervals | null {
 function totalSec(iv: Intervals): number {
   return iv.rounds * iv.workSec + Math.max(0, iv.rounds - 1) * iv.restSec;
 }
-// shrink an interval block to fit targetSec: scale work+rest, drop rounds if still over
+// shrink an interval block to fit targetSec. KEEP the round count fixed (it must
+// equal the number of listed AMRAP/round blocks) and shorten each round's work +
+// rest instead; only when the blocks don't fit even at a 1:30 floor do we reduce.
 function scaleIntervals(iv: Intervals, targetSec: number): Intervals | null {
   if (totalSec(iv) <= targetSec) return null;
   const ratio = targetSec / totalSec(iv);
-  const w = Math.max(60, Math.round((iv.workSec * ratio) / 30) * 30);
   const r = iv.restSec ? Math.max(30, Math.round((iv.restSec * ratio) / 15) * 15) : 0;
   let n = iv.rounds;
-  while (n > 1 && n * w + (n - 1) * r > targetSec) n--;
+  // most workouts fit all rounds; floor work to 30s so we don't exceed the budget
+  let w = Math.floor((targetSec - Math.max(0, n - 1) * r) / n / 30) * 30;
+  while (n > 1 && w < 90) {
+    n--;
+    w = Math.floor((targetSec - Math.max(0, n - 1) * r) / n / 30) * 30;
+  }
+  w = Math.max(60, w);
   const out = { rounds: n, workSec: w, restSec: r };
-  return totalSec(out) === totalSec(iv) ? null : out;
+  return out.rounds === iv.rounds && out.workSec === iv.workSec && out.restSec === iv.restSec ? null : out;
+}
+interface TimeRewrite {
+  title: string;
+  lines: string[];
+  rewrite: (t: string) => string; // apply the same shortening to another title (e.g. the main one)
+  droppedRounds: number; // how many trailing blocks to remove from a listed set
 }
 // rewrite a time-based section's title + structure lines to the new, shorter timing
-function adaptTimeStructure(
-  title: string,
-  lines: string[],
-  targetSec: number,
-): { title: string; lines: string[] } | null {
+function adaptTimeStructure(title: string, lines: string[], targetSec: number): TimeRewrite | null {
   const iv = detectIntervals(title, lines);
   if (iv) {
     const ni = scaleIntervals(iv, targetSec);
@@ -345,7 +354,7 @@ function adaptTimeStructure(
         .replace(IV, rep)
         .replace(/rest\s*\d+:\d{2}/i, `Rest ${secToClock(ni.restSec)}`)
         .replace(/\d+:\d{2}\s*rest/i, `${secToClock(ni.restSec)} rest`);
-    return { title: rewrite(title), lines: lines.map(rewrite) };
+    return { title: rewrite(title), lines: lines.map(rewrite), rewrite, droppedRounds: iv.rounds - ni.rounds };
   }
   // single AMRAP/EMOM duration → just shorten the minutes
   const src = AMRAP_N.exec(title) || lines.map((l) => AMRAP_N.exec(l)).find(Boolean);
@@ -355,9 +364,31 @@ function adaptTimeStructure(
     const nd = Math.max(1, Math.round(targetSec / 60));
     if (nd === +src[2]!) return null;
     const rewrite = (t: string) => t.replace(AMRAP_N, (_m, p) => `${String(p).toUpperCase()} ${nd}`);
-    return { title: rewrite(title), lines: lines.map(rewrite) };
+    return { title: rewrite(title), lines: lines.map(rewrite), rewrite, droppedRounds: 0 };
   }
   return null;
+}
+
+// strip partner/team phrasing from a title for a lone athlete
+function cleanPartnerTitle(t: string): string {
+  const out = t
+    .replace(/\b(?:in teams of\s*\d+|in pairs|with a partner|partners?|teams?)\b/gi, '')
+    .replace(/\s*[·—–|]\s*[·—–|]\s*/g, ' · ')
+    .replace(/^[\s·—–|:,\-]+/, '')
+    .replace(/[\s·—–|:,\-]+$/, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  return out;
+}
+
+// when a round was dropped, remove that many trailing listed blocks so the block
+// count stays equal to the round count
+const BLOCK_HEADER = /\b(?:amrap|emom|block|round|part|station)\s*#?\d+\b/i;
+function dropTrailingBlocks(lines: string[], n: number): string[] {
+  if (n <= 0) return lines;
+  const idx = lines.map((l, i) => (BLOCK_HEADER.test(l) ? i : -1)).filter((i) => i >= 0);
+  const remove = new Set(idx.slice(-n));
+  return lines.filter((_, i) => !remove.has(i));
 }
 
 // ---- partner / team wod → solo athlete ------------------------------------------------------
@@ -418,6 +449,7 @@ export function adaptWod(wod: DiaryWod, equipment: Equipment[], timeMin: number)
   let didVolume = false;
   let didTime = false;
   let soloNoteAdded = false;
+  let mainRewrite: ((t: string) => string) | null = null; // to shorten the main title the same way
 
   for (let i = 0; i < wod.sections.length; i++) {
     const s = wod.sections[i]!;
@@ -440,7 +472,8 @@ export function adaptWod(wod: DiaryWod, equipment: Equipment[], timeMin: number)
       const rew = adaptTimeStructure(title, rawLines, target);
       if (rew) {
         title = rew.title;
-        rawLines = rew.lines;
+        rawLines = dropTrailingBlocks(rew.lines, rew.droppedRounds);
+        if (!mainRewrite) mainRewrite = rew.rewrite;
         didTime = true;
       }
     }
@@ -474,6 +507,7 @@ export function adaptWod(wod: DiaryWod, equipment: Equipment[], timeMin: number)
       });
     }
     if (scaleVol) title = scaleCapText(title, factor);
+    if (isPartner) title = cleanPartnerTitle(title) || badge || 'אימון';
 
     // one plain-Hebrew note for a lone athlete, on the first work block
     if (isPartner && !isStrength && !soloNoteAdded) {
@@ -505,7 +539,12 @@ export function adaptWod(wod: DiaryWod, equipment: Equipment[], timeMin: number)
     timeNote = `הזמן מתאים (${timeMin} דק׳) — בצעו את האימון כפי שהוא.`;
   }
 
-  return { title: wod.title, date: wod.date, sections: out, timeNote, origMinutes, timeMin };
+  // the main workout title: shorten its timing the same way, and drop partner words
+  let mainTitle = wod.title;
+  if (mainRewrite) mainTitle = mainRewrite(mainTitle);
+  if (isPartner) mainTitle = cleanPartnerTitle(mainTitle) || wod.title;
+
+  return { title: mainTitle, date: wod.date, sections: out, timeNote, origMinutes, timeMin };
 }
 
 // WhatsApp-friendly plain text of the adapted workout.
