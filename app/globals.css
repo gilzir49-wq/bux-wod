@@ -3,7 +3,9 @@
 @tailwind utilities;
 
 :root {
-  --font-app: 'Heebo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-heebo: 'Heebo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-oswald: 'Oswald', var(--font-heebo);
+  --font-app: var(--font-heebo);
   --bux-green: #1e4d2b;
   --bux-green-dark: #143620;
   --bux-yellow: #ffd400;

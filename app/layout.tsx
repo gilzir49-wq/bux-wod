@@ -1,24 +1,10 @@
 import type { Metadata, Viewport } from 'next';
-import { Heebo, Oswald } from 'next/font/google';
 import './globals.css';
 import ServiceWorker from '@/components/ServiceWorker';
 
-const heebo = Heebo({
-  subsets: ['hebrew', 'latin'],
-  weight: ['400', '500', '700', '800', '900'],
-  variable: '--font-heebo',
-  display: 'swap',
-});
-
-// Athletic condensed display face for English movement names, numbers and
-// format badges — gives the WOD board its sporty CrossFit character.
-const oswald = Oswald({
-  subsets: ['latin'],
-  weight: ['500', '600', '700'],
-  variable: '--font-oswald',
-  display: 'swap',
-});
-
+// Fonts are loaded via a plain stylesheet link (below) rather than
+// next/font/google, so a transient Google Fonts hiccup can never fail the
+// build. The --font-heebo / --font-oswald CSS vars are defined in globals.css.
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 export const metadata: Metadata = {
@@ -53,14 +39,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="he" dir="rtl" className={`${heebo.variable} ${oswald.variable}`}>
-      <body
-        style={{
-          // wire next/font into our Tailwind --font-app var
-          // (Heebo .variable sets --font-heebo, Oswald sets --font-oswald)
-          ['--font-app' as any]: 'var(--font-heebo), system-ui, sans-serif',
-        }}
-      >
+    <html lang="he" dir="rtl">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Oswald:wght@500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body>
         {children}
         <ServiceWorker />
       </body>
