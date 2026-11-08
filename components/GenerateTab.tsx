@@ -36,8 +36,10 @@ import {
   pickSpotlight,
   Review,
 } from '@/lib/community';
+import { parseDiaryParams, DiaryParams, DiaryWod } from '@/lib/diary';
+import { adaptWod, adaptedShareText, AdaptedWod } from '@/lib/adapt';
 
-type Screen = 'home' | 'generating' | 'result' | 'saved';
+type Screen = 'home' | 'generating' | 'result' | 'saved' | 'adapted';
 
 const BUILD_MS = 1500;
 
@@ -63,6 +65,10 @@ export default function GenerateTab() {
   const [savedList, setSavedList] = useState<Workout[]>([]);
   const [toast, setToast] = useState<string | null>(null);
 
+  // "יומן באקס" incoming today's-workout link (null = normal generator)
+  const [diary, setDiary] = useState<DiaryParams | null>(null);
+  const [adapted, setAdapted] = useState<AdaptedWod | null>(null);
+
   // community: visit counter + rotating member review
   const [visits, setVisits] = useState(0);
   const [spotlight, setSpotlight] = useState<Review | null>(null);
@@ -86,6 +92,46 @@ export default function GenerateTab() {
       setSpotlight(pickSpotlight(await fetchReviews()));
     })();
   }, []);
+
+  // if opened from "יומן באקס" with today's workout, load it + preselect gear
+  useEffect(() => {
+    const d = parseDiaryParams(window.location.search);
+    if (d.active) {
+      setDiary(d);
+      setEquipment(d.equipment);
+    }
+  }, []);
+
+  function handleBuildAdapted() {
+    if (!diary?.active || !diary.wod) return;
+    const wod = diary.wod;
+    setScreen('generating');
+    window.scrollTo({ top: 0 });
+    window.setTimeout(() => {
+      setAdapted(adaptWod(wod, equipment, time));
+      setScreen('adapted');
+      window.scrollTo({ top: 0 });
+    }, BUILD_MS);
+  }
+
+  async function handleShareAdapted() {
+    if (!adapted) return;
+    const text = adaptedShareText(adapted);
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'BUX WOD 🦌', text });
+        return;
+      }
+    } catch {
+      /* cancelled */
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      flash('הועתק! 🦌');
+    } catch {
+      flash('לא ניתן לשתף במכשיר הזה');
+    }
+  }
 
   async function handlePublishReview() {
     if (!workout) return;
@@ -257,7 +303,18 @@ export default function GenerateTab() {
         </button>
       </div>
 
-      {screen === 'home' && (
+      {screen === 'home' && diary?.active && diary.wod && (
+        <DiaryHome
+          wod={diary.wod}
+          equipment={equipment}
+          toggleEquipment={toggleEquipment}
+          time={time}
+          setTime={setTime}
+          onBuild={handleBuildAdapted}
+        />
+      )}
+
+      {screen === 'home' && !diary?.active && (
         <HomeScreen
           time={time}
           setTime={setTime}
@@ -281,6 +338,26 @@ export default function GenerateTab() {
       )}
 
       {screen === 'generating' && <Generating />}
+
+      {screen === 'adapted' && adapted && (
+        <div className="mt-5">
+          <AdaptedView adapted={adapted} />
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <ActionBtn onClick={handleShareAdapted} variant="green">
+              <ShareIcon size={19} /> שיתוף
+            </ActionBtn>
+            <ActionBtn
+              onClick={() => {
+                setScreen('home');
+                window.scrollTo({ top: 0 });
+              }}
+              variant="yellow"
+            >
+              <RefreshIcon size={19} /> שנה זמן/ציוד
+            </ActionBtn>
+          </div>
+        </div>
+      )}
 
       {screen === 'result' && workout && (
         <div className="mt-5">
@@ -594,6 +671,159 @@ function HomeScreen(props: {
       >
         <ShareIcon size={17} /> שתפו את BUX WOD לחברים
       </button>
+    </div>
+  );
+}
+
+// ---------- "יומן באקס" home: today's workout → adapt to gear + time ----------
+function DiaryHome(props: {
+  wod: DiaryWod;
+  equipment: Equipment[];
+  toggleEquipment: (e: Equipment) => void;
+  time: TimeOption;
+  setTime: (t: TimeOption) => void;
+  onBuild: () => void;
+}) {
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+  const { wod } = props;
+  return (
+    <div className="mt-4 space-y-6 animate-fade-up">
+      <div className="text-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={`${basePath}/brand/logo-icon.png`} alt="" className="mx-auto mb-2 h-16 w-auto" draggable={false} />
+        <div className="display text-[11px] font-bold uppercase tracking-[0.3em] text-bux-green-light">
+          האימון של היום
+        </div>
+        <h1 className="mt-1 text-2xl font-black text-bux-green">מקרוספיט באקס</h1>
+        <p className="mx-auto mt-1.5 max-w-[20rem] text-sm font-semibold text-bux-green-light">
+          נתאים לך את האימון של היום לפי הזמן והציוד שיש לך עכשיו.
+        </p>
+      </div>
+
+      {/* today's workout, as the coach wrote it (reference) */}
+      <section className="rounded-3xl bg-white p-4 shadow-card hairline">
+        {wod.date && <div className="display text-[11px] font-bold text-bux-green-light">{wod.date}</div>}
+        <h2 className="font-black text-bux-green leading-tight" dir="auto">{wod.title}</h2>
+        {wod.sections.map((s, i) => (
+          <div key={i} className="mt-3 border-t border-bux-green/10 pt-2.5 first:border-0 first:pt-0">
+            <div className="text-sm font-extrabold text-bux-green" dir="auto">{s.title}</div>
+            {s.lines.map((l, j) => (
+              <div key={j} className="display mt-0.5 text-[13px] text-bux-green-light" dir="auto">{l}</div>
+            ))}
+          </div>
+        ))}
+      </section>
+
+      <Field step={1} label="מה יש לך מסביב?" hint="כבר סימנו — אפשר לשנות">
+        <div className="grid grid-cols-2 gap-2.5">
+          {EQUIPMENT_OPTIONS.map((e) => (
+            <Chip
+              key={e.value}
+              active={props.equipment.includes(e.value)}
+              onClick={() => props.toggleEquipment(e.value)}
+              icon={<OptionIcon name={e.value} size={21} />}
+              multi
+              small
+            >
+              {e.label}
+            </Chip>
+          ))}
+        </div>
+      </Field>
+
+      <Field step={2} label="כמה זמן יש לך?">
+        <div className="grid grid-cols-3 gap-2.5">
+          {TIME_OPTIONS.map((t) => (
+            <button
+              key={t}
+              onClick={() => props.setTime(t)}
+              className={`press flex flex-col items-center justify-center rounded-2xl border-2 py-3 ${
+                props.time === t
+                  ? 'border-bux-green bg-bux-green text-white shadow-card'
+                  : 'border-bux-green/12 bg-white text-bux-green hairline'
+              }`}
+            >
+              <span className="display text-2xl font-bold leading-none">{t}</span>
+              <span className="mt-0.5 text-[11px] font-bold opacity-70">דקות</span>
+            </button>
+          ))}
+        </div>
+      </Field>
+
+      <button
+        onClick={props.onBuild}
+        className="press flex w-full items-center justify-center gap-2 rounded-2xl bg-bux-yellow py-5 text-xl font-black text-bux-green shadow-btn active:shadow-none"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={`${basePath}/brand/logo-icon.png`} alt="" className="h-7 w-auto" draggable={false} />
+        בנו לי גרסה מותאמת
+      </button>
+      <p className="display text-center text-xs font-bold uppercase tracking-[0.3em] text-bux-green-light">
+        Let’s Go BUX
+      </p>
+    </div>
+  );
+}
+
+function AdaptedView({ adapted }: { adapted: AdaptedWod }) {
+  return (
+    <div className="space-y-4">
+      <div className="text-center">
+        <div className="display text-[11px] font-bold uppercase tracking-[0.3em] text-bux-green-light">
+          מותאם אליך
+        </div>
+        <h2 className="mt-1 text-2xl font-black text-bux-green">האימון של היום</h2>
+        {adapted.title && (
+          <p className="mt-1 text-xs font-semibold text-bux-green-light" dir="auto">{adapted.title}</p>
+        )}
+      </div>
+
+      <div className="flex gap-2 rounded-2xl border-2 border-bux-yellow/40 bg-white p-3.5 text-sm font-semibold leading-relaxed text-bux-green shadow-card">
+        <span>⏱</span>
+        <span>{adapted.timeNote}</span>
+      </div>
+
+      {adapted.sections.map((s, i) => (
+        <section
+          key={i}
+          className="board relative overflow-hidden rounded-3xl shadow-[0_12px_30px_-8px_rgba(20,54,32,0.5)] animate-fade-up"
+        >
+          <div className="h-1.5 w-full bg-bux-yellow" />
+          <div className="px-5 pt-4 pb-5">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-lg font-black text-white" dir="auto">
+                {s.title}
+                {s.titleSwapped && <span className="text-bux-yellow"> 🔁</span>}
+              </span>
+              {s.badge && (
+                <span className="display shrink-0 rounded-lg bg-bux-yellow px-3 py-1 text-sm font-bold text-bux-green">
+                  {s.badge}
+                </span>
+              )}
+            </div>
+            <div className="mt-3">
+              {s.lines.map((l, j) => (
+                <div
+                  key={j}
+                  className="flex items-start gap-2.5 border-b border-white/10 py-2.5 last:border-0"
+                >
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-bux-yellow" />
+                  <span className="display flex-1 text-[17px] font-bold leading-snug text-white" dir="auto">
+                    {l.text}
+                  </span>
+                  {l.swapped && (
+                    <span className="mt-0.5 shrink-0 text-[11px] font-bold text-bux-yellow">🔁</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ))}
+
+      <p className="text-center text-xs font-semibold text-bux-green-light">
+        🔁 = הותאם לציוד שלך (אותו מבנה ואותה מטרה)
+      </p>
     </div>
   );
 }
