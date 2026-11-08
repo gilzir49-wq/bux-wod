@@ -1,0 +1,121 @@
+{
+  "TIME_OPTIONS": [
+    15,
+    20,
+    30,
+    40,
+    45,
+    60
+  ],
+  "LEVEL_OPTIONS": [
+    {
+      "value": "beginner",
+      "label": "מתחיל",
+      "emoji": "🌱"
+    },
+    {
+      "value": "intermediate",
+      "label": "בינוני",
+      "emoji": "🔥"
+    },
+    {
+      "value": "advanced",
+      "label": "מתקדם",
+      "emoji": "⚡"
+    }
+  ],
+  "GOAL_OPTIONS": [
+    {
+      "value": "strength",
+      "label": "כוח",
+      "emoji": "🏋️"
+    },
+    {
+      "value": "cardio",
+      "label": "סיבולת",
+      "emoji": "🫀"
+    },
+    {
+      "value": "general",
+      "label": "כושר כללי",
+      "emoji": "💪"
+    },
+    {
+      "value": "gymnastics",
+      "label": "גימנסטיקה",
+      "emoji": "🤸"
+    }
+  ],
+  "EQUIPMENT_OPTIONS": [
+    {
+      "value": "none",
+      "label": "משקל גוף בלבד",
+      "emoji": "🧍"
+    },
+    {
+      "value": "pullup_bar",
+      "label": "מתח",
+      "emoji": "🚧"
+    },
+    {
+      "value": "dumbbells",
+      "label": "משקולות יד",
+      "emoji": "🏋️"
+    },
+    {
+      "value": "kettlebell",
+      "label": "קטלבל",
+      "emoji": "🔔"
+    },
+    {
+      "value": "barbell",
+      "label": "מוט + צלחות",
+      "emoji": "🏋️‍♂️"
+    },
+    {
+      "value": "bands",
+      "label": "גומיות התנגדות",
+      "emoji": "🎗️"
+    },
+    {
+      "value": "jump_rope",
+      "label": "חבל קפיצה",
+      "emoji": "🪢"
+    },
+    {
+      "value": "box",
+      "label": "תיבה / ספסל",
+      "emoji": "📦"
+    },
+    {
+      "value": "rings",
+      "label": "טבעות",
+      "emoji": "⭕"
+    },
+    {
+      "value": "rower",
+      "label": "מכונת חתירה",
+      "emoji": "🚣"
+    },
+    {
+      "value": "bike",
+      "label": "אופני כושר",
+      "emoji": "🚴"
+    },
+    {
+      "value": "skierg",
+      "label": "סקי ארג",
+      "emoji": "⛷️"
+    },
+    {
+      "value": "full_gym",
+      "label": "חדר כושר מלא",
+      "emoji": "🏟️"
+    },
+    {
+      "value": "park",
+      "label": "פארק פתוח",
+      "emoji": "🌳"
+    }
+  ]
+}

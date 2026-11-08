@@ -1,0 +1,1110 @@
+{
+  "movements": [
+    {
+      "id": "run",
+      "name": "Run",
+      "modality": "cardio",
+      "equipment": [
+        "none",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=KdfURwxmSHE",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 200,
+      "unit": "m",
+      "load": 0,
+      "tags": [
+        "monostructural"
+      ]
+    },
+    {
+      "id": "shuttle_run",
+      "name": "Shuttle Run",
+      "modality": "cardio",
+      "equipment": [
+        "none",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=yZeJX_zTwys",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 100,
+      "unit": "m",
+      "load": 0
+    },
+    {
+      "id": "high_knees",
+      "name": "High Knees",
+      "modality": "cardio",
+      "equipment": [
+        "none",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=LJMrXG_vPQ8",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 40,
+      "unit": "reps",
+      "load": 0
+    },
+    {
+      "id": "double_unders",
+      "name": "Double Unders",
+      "modality": "cardio",
+      "equipment": [
+        "jump_rope",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=s8YjkbvShAQ",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 40,
+      "unit": "reps",
+      "load": 0,
+      "scaling": "מתחילים: 60 דילוגים רגילים (Single Unders) במקום."
+    },
+    {
+      "id": "single_unders",
+      "name": "Single Unders",
+      "modality": "cardio",
+      "equipment": [
+        "jump_rope",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=hCuXYrTOMxI",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 60,
+      "unit": "reps",
+      "load": 0
+    },
+    {
+      "id": "row_cal",
+      "name": "Row",
+      "modality": "cardio",
+      "equipment": [
+        "rower",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=soveq2xBNpo",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 12,
+      "unit": "cal",
+      "load": 0
+    },
+    {
+      "id": "bike_cal",
+      "name": "Echo/Assault Bike",
+      "modality": "cardio",
+      "equipment": [
+        "bike",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=mY9ihujdkc0",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 10,
+      "unit": "cal",
+      "load": 0
+    },
+    {
+      "id": "ski_cal",
+      "name": "SkiErg",
+      "modality": "cardio",
+      "equipment": [
+        "skierg",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=P7qpoJmX91I",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 12,
+      "unit": "cal",
+      "load": 0
+    },
+    {
+      "id": "mountain_climbers",
+      "name": "Mountain Climbers",
+      "modality": "cardio",
+      "equipment": [
+        "none",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=hZb6jTbCLeE",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 40,
+      "unit": "reps",
+      "load": 0
+    },
+    {
+      "id": "air_squat",
+      "name": "Air Squat",
+      "modality": "gymnastics",
+      "equipment": [
+        "none",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=a_fb6Kz7FQg",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 20,
+      "unit": "reps",
+      "load": 1
+    },
+    {
+      "id": "pushup",
+      "name": "Push-up",
+      "modality": "gymnastics",
+      "equipment": [
+        "none",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=I9fsqKE5XHo",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 15,
+      "unit": "reps",
+      "load": 1,
+      "scaling": "מתחילים: שכיבות סמיכה על הברכיים או בזווית מול ספסל."
+    },
+    {
+      "id": "situp",
+      "name": "Sit-up",
+      "modality": "gymnastics",
+      "equipment": [
+        "none",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=_HDZODOx7Zw",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 20,
+      "unit": "reps",
+      "load": 1
+    },
+    {
+      "id": "burpee",
+      "name": "Burpee",
+      "modality": "gymnastics",
+      "equipment": [
+        "none",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=LmzygNGaJSM",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 12,
+      "unit": "reps",
+      "load": 2,
+      "scaling": "מתחילים: בצעו את הבורפי בקצב מבוקר, אפשר בלי קפיצה בסוף."
+    },
+    {
+      "id": "lunge",
+      "name": "Walking Lunge",
+      "modality": "gymnastics",
+      "equipment": [
+        "none",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=yDVAlYTNPSo",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 20,
+      "unit": "reps",
+      "load": 1
+    },
+    {
+      "id": "jumping_jacks",
+      "name": "Jumping Jacks",
+      "modality": "gymnastics",
+      "equipment": [
+        "none",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=bT2iY8IjEU0",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 40,
+      "unit": "reps",
+      "load": 0
+    },
+    {
+      "id": "hollow_hold",
+      "name": "Hollow Hold",
+      "modality": "gymnastics",
+      "equipment": [
+        "none",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=4xRpGgttca8",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 30,
+      "unit": "sec",
+      "load": 1
+    },
+    {
+      "id": "plank",
+      "name": "Plank Hold",
+      "modality": "gymnastics",
+      "equipment": [
+        "none",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=UQ78pw0WNZI",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 45,
+      "unit": "sec",
+      "load": 1
+    },
+    {
+      "id": "pullup",
+      "name": "Pull-up",
+      "modality": "gymnastics",
+      "equipment": [
+        "pullup_bar",
+        "rings",
+        "full_gym",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=hyRUZJI134Y",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 10,
+      "unit": "reps",
+      "load": 2,
+      "scaling": "מתחילים: Ring Rows או מתח בעזרת גומיית התנגדות."
+    },
+    {
+      "id": "chinup",
+      "name": "Chin-up",
+      "modality": "gymnastics",
+      "equipment": [
+        "pullup_bar",
+        "full_gym",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=Oi3bW9nQmGI",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 8,
+      "unit": "reps",
+      "load": 2,
+      "scaling": "מתחילים: בעזרת גומיית התנגדות או אחיזה איזומטרית למעלה."
+    },
+    {
+      "id": "toes_to_bar",
+      "name": "Toes-to-Bar",
+      "modality": "gymnastics",
+      "equipment": [
+        "pullup_bar",
+        "full_gym",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=9Tx0QKP1A0I",
+      "levels": [
+        "advanced"
+      ],
+      "baseReps": 10,
+      "unit": "reps",
+      "load": 2,
+      "scaling": "סקיילינג: Knees-to-Elbow או הרמות ברכיים תלוי על המוט (Knee Raises)."
+    },
+    {
+      "id": "knees_to_elbow",
+      "name": "Knees-to-Elbow",
+      "modality": "gymnastics",
+      "equipment": [
+        "pullup_bar",
+        "full_gym",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=zEJ0q5sz4G0",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 10,
+      "unit": "reps",
+      "load": 2,
+      "scaling": "מתחילים: הרמות ברכיים תלוי על המוט."
+    },
+    {
+      "id": "ring_row",
+      "name": "Ring Row",
+      "modality": "gymnastics",
+      "equipment": [
+        "rings",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=sEAOZc77wk8",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 12,
+      "unit": "reps",
+      "load": 1
+    },
+    {
+      "id": "ring_dip",
+      "name": "Ring Dip",
+      "modality": "gymnastics",
+      "equipment": [
+        "rings",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=EznLCDBAPIU",
+      "levels": [
+        "advanced"
+      ],
+      "baseReps": 8,
+      "unit": "reps",
+      "load": 2,
+      "scaling": "סקיילינג: Bench Dips או דחיקות על קרקע."
+    },
+    {
+      "id": "box_jump",
+      "name": "Box Jump",
+      "modality": "gymnastics",
+      "equipment": [
+        "box",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=NBY9-kTuHEk",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 15,
+      "unit": "reps",
+      "load": 2,
+      "scaling": "מתחילים: Box Step-ups (עלייה ברגל אחת בכל פעם)."
+    },
+    {
+      "id": "box_step_up",
+      "name": "Box Step-up",
+      "modality": "gymnastics",
+      "equipment": [
+        "box",
+        "full_gym",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=j8KN0jwWaRA",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 20,
+      "unit": "reps",
+      "load": 1
+    },
+    {
+      "id": "handstand_pushup",
+      "name": "Handstand Push-up",
+      "modality": "gymnastics",
+      "equipment": [
+        "none",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=qbRbM6d5ddM",
+      "levels": [
+        "advanced"
+      ],
+      "baseReps": 8,
+      "unit": "reps",
+      "load": 3,
+      "scaling": "סקיילינג: Pike Push-up עם הרגליים על תיבה/ספסל."
+    },
+    {
+      "id": "pike_pushup",
+      "name": "Pike Push-up",
+      "modality": "gymnastics",
+      "equipment": [
+        "none",
+        "box",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=89-8waE2XKI",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 10,
+      "unit": "reps",
+      "load": 2
+    },
+    {
+      "id": "wall_walk",
+      "name": "Wall Walk",
+      "modality": "gymnastics",
+      "equipment": [
+        "none",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=NK_OcHEm8yM",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 4,
+      "unit": "reps",
+      "load": 3
+    },
+    {
+      "id": "broad_jump",
+      "name": "Broad Jump",
+      "modality": "gymnastics",
+      "equipment": [
+        "none",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=7Du1KbwCdUk",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 10,
+      "unit": "reps",
+      "load": 1
+    },
+    {
+      "id": "jumping_lunge",
+      "name": "Jumping Lunge",
+      "modality": "gymnastics",
+      "equipment": [
+        "none",
+        "park"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=acLvV5Gwi7o",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 20,
+      "unit": "reps",
+      "load": 2
+    },
+    {
+      "id": "db_thruster",
+      "name": "Dumbbell Thruster",
+      "modality": "weightlifting",
+      "equipment": [
+        "dumbbells",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=qnOikHllwWc",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 12,
+      "unit": "reps",
+      "load": 3,
+      "scaling": "בחרו משקל שמאפשר לבצע את כל החזרות רצופות בטכניקה נקייה."
+    },
+    {
+      "id": "db_snatch",
+      "name": "Dumbbell Snatch",
+      "modality": "weightlifting",
+      "equipment": [
+        "dumbbells",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=3mlhF3dptAo",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 14,
+      "unit": "reps",
+      "load": 2,
+      "scaling": "מתחילים: משקל קל וטכניקה לפני קצב. מתחלפים יד כל חזרה."
+    },
+    {
+      "id": "devil_press",
+      "name": "Devil Press",
+      "modality": "weightlifting",
+      "equipment": [
+        "dumbbells",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=zlqEtAUds-I",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 10,
+      "unit": "reps",
+      "load": 3,
+      "scaling": "מתחילים: Dumbbell Burpee — בורפי ואז הרמה מעל הראש בנפרד."
+    },
+    {
+      "id": "db_push_press",
+      "name": "Dumbbell Push Press",
+      "modality": "weightlifting",
+      "equipment": [
+        "dumbbells",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=sElIkjcfyNY",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 12,
+      "unit": "reps",
+      "load": 2
+    },
+    {
+      "id": "db_goblet_squat",
+      "name": "Goblet Squat",
+      "modality": "weightlifting",
+      "equipment": [
+        "dumbbells",
+        "kettlebell",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=lRYBbchqxtI",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 15,
+      "unit": "reps",
+      "load": 2
+    },
+    {
+      "id": "db_renegade_row",
+      "name": "Renegade Row",
+      "modality": "weightlifting",
+      "equipment": [
+        "dumbbells",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=YUMXGLL2IKE",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 12,
+      "unit": "reps",
+      "load": 2
+    },
+    {
+      "id": "db_farmers_carry",
+      "name": "Farmer's Carry",
+      "modality": "weightlifting",
+      "equipment": [
+        "dumbbells",
+        "kettlebell",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=1uOs1hP3u4A",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 40,
+      "unit": "m",
+      "load": 1
+    },
+    {
+      "id": "kb_swing",
+      "name": "Kettlebell Swing",
+      "modality": "weightlifting",
+      "equipment": [
+        "kettlebell",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=mKDIuUbH94Q",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 20,
+      "unit": "reps",
+      "load": 2,
+      "scaling": "מתחילים: Russian Swing עד גובה הכתפיים. מתקדמים: American Swing מעל הראש."
+    },
+    {
+      "id": "kb_goblet_clean",
+      "name": "Kettlebell Clean",
+      "modality": "weightlifting",
+      "equipment": [
+        "kettlebell",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=MYpz7OykS7I",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 14,
+      "unit": "reps",
+      "load": 2
+    },
+    {
+      "id": "kb_snatch",
+      "name": "Kettlebell Snatch",
+      "modality": "weightlifting",
+      "equipment": [
+        "kettlebell",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=Pm-b2XFeABA",
+      "levels": [
+        "advanced"
+      ],
+      "baseReps": 14,
+      "unit": "reps",
+      "load": 2,
+      "scaling": "מתחילים: Kettlebell Swing במקום."
+    },
+    {
+      "id": "kb_thruster",
+      "name": "Kettlebell Thruster",
+      "modality": "weightlifting",
+      "equipment": [
+        "kettlebell",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=Id0Qefh4AHc",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 14,
+      "unit": "reps",
+      "load": 3
+    },
+    {
+      "id": "kb_turkish_getup",
+      "name": "Turkish Get-up",
+      "modality": "weightlifting",
+      "equipment": [
+        "kettlebell",
+        "dumbbells",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=sgd8n917Zv0",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 6,
+      "unit": "reps",
+      "load": 2
+    },
+    {
+      "id": "bb_thruster",
+      "name": "Barbell Thruster",
+      "modality": "weightlifting",
+      "equipment": [
+        "barbell",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=L219ltL15zk",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 12,
+      "unit": "reps",
+      "load": 3,
+      "scaling": "Rx: 43/30 ק״ג. מתחילים: מוט ריק או PVC לטכניקה."
+    },
+    {
+      "id": "bb_deadlift",
+      "name": "Deadlift",
+      "modality": "weightlifting",
+      "equipment": [
+        "barbell",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=ZaTM37cfiDs",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 10,
+      "unit": "reps",
+      "load": 3,
+      "scaling": "שמרו על גב נייטרלי. בחרו משקל מאתגר אך בטוח."
+    },
+    {
+      "id": "bb_clean",
+      "name": "Power Clean",
+      "modality": "weightlifting",
+      "equipment": [
+        "barbell",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=KwYJTpQ_x5A",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 8,
+      "unit": "reps",
+      "load": 3,
+      "scaling": "מתחילים: Hang Power Clean ממוט קל."
+    },
+    {
+      "id": "bb_snatch",
+      "name": "Power Snatch",
+      "modality": "weightlifting",
+      "equipment": [
+        "barbell",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=TL8SMp7RdXQ",
+      "levels": [
+        "advanced"
+      ],
+      "baseReps": 7,
+      "unit": "reps",
+      "load": 3,
+      "scaling": "מתחילים: Hang Power Snatch או Dumbbell Snatch."
+    },
+    {
+      "id": "bb_front_squat",
+      "name": "Front Squat",
+      "modality": "weightlifting",
+      "equipment": [
+        "barbell",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=N4WGYDGu6bI",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 10,
+      "unit": "reps",
+      "load": 3
+    },
+    {
+      "id": "bb_back_squat",
+      "name": "Back Squat",
+      "modality": "weightlifting",
+      "equipment": [
+        "barbell",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=rrJIyZGlK8c",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 10,
+      "unit": "reps",
+      "load": 3
+    },
+    {
+      "id": "bb_push_press",
+      "name": "Push Press",
+      "modality": "weightlifting",
+      "equipment": [
+        "barbell",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=VaIDqmZBkpc",
+      "levels": [
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 10,
+      "unit": "reps",
+      "load": 3
+    },
+    {
+      "id": "bb_overhead_press",
+      "name": "Strict Press",
+      "modality": "weightlifting",
+      "equipment": [
+        "barbell",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=KP1sYz2VICk",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 10,
+      "unit": "reps",
+      "load": 3
+    },
+    {
+      "id": "wall_ball",
+      "name": "Wall Ball",
+      "modality": "weightlifting",
+      "equipment": [
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=WGM7FjbDJUA",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 15,
+      "unit": "reps",
+      "load": 2,
+      "scaling": "Rx: 9/6 ק״ג למטרה 10/9 רגל. מתחילים: כדור קל יותר ומטרה נמוכה."
+    },
+    {
+      "id": "band_pull_apart",
+      "name": "Band Pull-apart",
+      "modality": "weightlifting",
+      "equipment": [
+        "bands",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=SuvO4TBwSu4",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 20,
+      "unit": "reps",
+      "load": 1
+    },
+    {
+      "id": "band_press",
+      "name": "Band Overhead Press",
+      "modality": "weightlifting",
+      "equipment": [
+        "bands",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=DWw4e2o9gto",
+      "levels": [
+        "beginner",
+        "intermediate"
+      ],
+      "baseReps": 18,
+      "unit": "reps",
+      "load": 1
+    },
+    {
+      "id": "band_row",
+      "name": "Band Bent-over Row",
+      "modality": "weightlifting",
+      "equipment": [
+        "bands",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=vR9KcvzLqVo",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 18,
+      "unit": "reps",
+      "load": 1
+    },
+    {
+      "id": "band_good_morning",
+      "name": "Band Good Morning",
+      "modality": "weightlifting",
+      "equipment": [
+        "bands",
+        "full_gym"
+      ],
+      "youtube": "https://www.youtube.com/watch?v=CTRaCzE8pWU",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "baseReps": 18,
+      "unit": "reps",
+      "load": 1
+    }
+  ],
+  "warmup": [
+    {
+      "name": "Jumping Jacks",
+      "detail": "30 שניות",
+      "youtube": "https://www.youtube.com/watch?v=bT2iY8IjEU0"
+    },
+    {
+      "name": "Arm Circles",
+      "detail": "30 שניות (קדימה ואחורה)",
+      "youtube": "https://www.youtube.com/watch?v=mwDgFY86zck"
+    },
+    {
+      "name": "Leg Swings",
+      "detail": "10 לכל רגל",
+      "youtube": "https://www.youtube.com/watch?v=3l31E2cMGMk"
+    },
+    {
+      "name": "World’s Greatest Stretch",
+      "detail": "5 לכל צד",
+      "youtube": "https://www.youtube.com/watch?v=-CiWQ2IvY34"
+    },
+    {
+      "name": "Inchworm",
+      "detail": "8 חזרות",
+      "youtube": "https://www.youtube.com/watch?v=-q1XGQ2VMUU"
+    },
+    {
+      "name": "Air Squat",
+      "detail": "15 חזרות",
+      "youtube": "https://www.youtube.com/watch?v=a_fb6Kz7FQg"
+    },
+    {
+      "name": "Spiderman Lunge",
+      "detail": "8 לכל צד",
+      "youtube": "https://www.youtube.com/watch?v=qCDFp8cPrqw"
+    },
+    {
+      "name": "Hip Circles",
+      "detail": "10 לכל כיוון",
+      "youtube": "https://www.youtube.com/watch?v=x-5h_QUOem8"
+    },
+    {
+      "name": "Scapular Pull-ups",
+      "detail": "8 חזרות",
+      "youtube": "https://www.youtube.com/watch?v=-ZIpSoTRsuE",
+      "needs": "pullup_bar"
+    },
+    {
+      "name": "Shoulder Pass-throughs",
+      "detail": "10 חזרות (מקל או מגבת)",
+      "youtube": "https://www.youtube.com/watch?v=ExmTDHU9wS0"
+    },
+    {
+      "name": "High Knees",
+      "detail": "30 שניות",
+      "youtube": "https://www.youtube.com/watch?v=LJMrXG_vPQ8"
+    },
+    {
+      "name": "Cossack Squat",
+      "detail": "6 לכל צד",
+      "youtube": "https://www.youtube.com/watch?v=MJvazUpmdZU"
+    }
+  ],
+  "cooldown": [
+    {
+      "name": "Child’s Pose",
+      "detail": "60 שניות",
+      "youtube": "https://www.youtube.com/watch?v=kH12QrSGedM"
+    },
+    {
+      "name": "Pigeon Stretch",
+      "detail": "45 שניות לכל צד",
+      "youtube": "https://www.youtube.com/watch?v=op-eDU9eNqM"
+    },
+    {
+      "name": "Couch Stretch",
+      "detail": "45 שניות לכל צד",
+      "youtube": "https://www.youtube.com/watch?v=TIJu5aWPke0"
+    },
+    {
+      "name": "Forward Fold",
+      "detail": "60 שניות",
+      "youtube": "https://www.youtube.com/watch?v=goN4rWbQUn4"
+    },
+    {
+      "name": "Cat-Cow",
+      "detail": "8 חזרות",
+      "youtube": "https://www.youtube.com/watch?v=LIVJZZyZ2qM"
+    },
+    {
+      "name": "Thread the Needle",
+      "detail": "30 שניות לכל צד",
+      "youtube": "https://www.youtube.com/watch?v=gyew25Vaqj8"
+    },
+    {
+      "name": "Cross-body Shoulder Stretch",
+      "detail": "30 שניות לכל צד",
+      "youtube": "https://www.youtube.com/watch?v=aIq0fLi8iak"
+    },
+    {
+      "name": "Seated Hamstring Stretch",
+      "detail": "45 שניות לכל צד",
+      "youtube": "https://www.youtube.com/watch?v=u55F2jOzBVI"
+    },
+    {
+      "name": "Quad Stretch",
+      "detail": "30 שניות לכל צד",
+      "youtube": "https://www.youtube.com/watch?v=zi5__zBRzYc"
+    },
+    {
+      "name": "Box Breathing",
+      "detail": "60 שניות (4-4-4-4)",
+      "youtube": "https://www.youtube.com/watch?v=tEmt1Znux58"
+    }
+  ]
+}
